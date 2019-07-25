@@ -1,0 +1,8 @@
+[package]
+name = "numeric"
+version = "0.1.0"
+authors = ["Ivan Pleshkov <pleshkov.ivan@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+memory-safe-std = { path = "../memory-safe-std" }
