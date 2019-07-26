@@ -2,13 +2,9 @@ pub trait Exception {
     fn message(&self) -> String;
 }
 
+#[derive(Debug)]
 pub enum RuntimeError {
+    Exception,
     ThreadTerminated,
     OutOfMemory,
-    Exception,
-}
-
-pub enum SomeOrRuntimeError<T> {
-    Some(T),
-    Runtime(RuntimeError),
 }

@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "exceptions",
     "memory-safe-std",
     "numeric",
+    "playground",
 ]

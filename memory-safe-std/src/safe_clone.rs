@@ -1,4 +1,5 @@
+use crate::runtime_error::RuntimeError;
+
 pub trait SafeClone : Sized {
-    type Err: Sized;
-    fn safe_clone(&self) -> Result<Self, Self::Err>;
+    fn safe_clone(&self) -> Result<Self, RuntimeError>;
 }

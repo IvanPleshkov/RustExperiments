@@ -1,6 +1,7 @@
-use crate::runtime_error::{ RuntimeError, SomeOrRuntimeError };
+use crate::runtime_error::RuntimeError;
 use crate::safe_clone::SafeClone;
 use std::hash::Hash;
+use std::vec::Vec;
 
 pub struct SafeVec<T> {
     v: Vec<T>,
@@ -159,11 +160,11 @@ impl<T> SafeVec<T> {
 
 impl<T: SafeClone> SafeVec<T>
 {
-    pub fn safe_resize(&mut self, new_len: usize, value: T) -> Result<(), SomeOrRuntimeError<T::Err>> {
+    pub fn safe_resize(&mut self, new_len: usize, value: T) -> Result<(), RuntimeError> {
         panic!("not implemented!")
     }
 
-    pub fn safe_extend_from_slice(&mut self, other: &[T]) -> Result<(), SomeOrRuntimeError<T::Err>> {
+    pub fn safe_extend_from_slice(&mut self, other: &[T]) -> Result<(), RuntimeError> {
         panic!("not implemented!")
     }
 }
@@ -195,10 +196,11 @@ impl<T: PartialEq> Vec<T> {
 */
 
 impl<T: SafeClone> SafeClone for SafeVec<T> {
-    type Err = SomeOrRuntimeError<T::Err>;
-
-    fn safe_clone(&self) -> Result<Self, Self::Err> {
-        panic!("not implemented!")
+    fn safe_clone(&self) -> Result<Self, RuntimeError> {
+        panic!("not implemeneted")
+        // Ok(Self {
+        //     v: self.v.clone()
+        // })
     }
 }
 
