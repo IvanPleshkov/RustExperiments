@@ -1,7 +1,8 @@
 [workspace]
 members = [
-    "exceptions",
     "memory-safe-std",
     "numeric",
+    "ari",
+    "ari-vulkan-api",
     "playground",
 ]

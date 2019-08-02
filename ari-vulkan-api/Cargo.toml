@@ -1,10 +1,8 @@
 [package]
-name = "numeric"
+name = "ari-vulkan-api"
 version = "0.1.0"
 authors = ["Ivan Pleshkov <pleshkov.ivan@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-memory-safe-std = { path = "../memory-safe-std" }
-
-num = "0.2.0"
+ari = { path = "../ari" }
