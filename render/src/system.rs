@@ -62,7 +62,7 @@ impl SystemRequest {
 
     pub fn request_vulkan_debug() -> SystemRequest {
         SystemRequest {
-            api_name: "vulkan".to_string(),
+            api_name: Self::vulkan_name(),
             min_supported_version: semver::Version::parse("1.0.0").unwrap(),
             first_unsupported_version: semver::Version::parse("1.0.0").unwrap(),
             required_device_features: vec![],
@@ -80,5 +80,29 @@ impl SystemRequest {
             engine_name: "".to_string(),
             engine_version: semver::Version::parse("0.1.0").unwrap(),
         }
+    }
+
+    pub fn directx_name() -> String {
+        String::from("DirectX")
+    }
+
+    pub fn opengl_name() -> String {
+        String::from("OpenGL")
+    }
+
+    pub fn opengles_name() -> String {
+        String::from("OpenGLES")
+    }
+
+    pub fn webgl_name() -> String {
+        String::from("WebGL")
+    }
+
+    pub fn vulkan_name() -> String {
+        String::from("Vulkan")
+    }
+
+    pub fn metal_name() -> String {
+        String::from("Metal")
     }
 }
