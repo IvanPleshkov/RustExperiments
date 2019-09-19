@@ -7,6 +7,8 @@ pub struct System {
 
     pub vk_instance: ash::Instance,
 
+    pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
+
     pub devices: Vec<Box<VulkanRenderDevice>>,
 }
 
@@ -24,19 +26,55 @@ impl System {
         }
     }
 
+    fn get_vk_allocation_callbacks() -> Option<vk::AllocationCallbacks> {
+        None
+    }
+
+    fn get_vk_instance_create_info(request: &render::SystemRequest) -> vk::InstanceCreateInfo {
+        let app_info = vk::ApplicationInfo::builder()
+            .application_name(std::ffi::CString::new(
+                request.application_name.clone()).unwrap().as_c_str())
+            .application_version(ash::vk_make_version!(
+                request.application_version.major,
+                request.application_version.minor,
+                request.application_version.patch))
+            .engine_name(std::ffi::CString::new(
+                request.engine_name.clone()).unwrap().as_c_str())
+            .engine_version(ash::vk_make_version!(
+                request.application_version.major,
+                request.application_version.minor,
+                request.application_version.patch))
+            .api_version(ash::vk_make_version!(
+                request.min_supported_version.major,
+                request.min_supported_version.minor,
+                request.min_supported_version.patch))
+            .build();
+
+        vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            //.enabled_extension_names(enabled_extension_names: &'a [*const c_char])
+            //.enabled_layer_names(enabled_layer_names: &'a [*const c_char])
+            .build()
+    }
+
     fn init_render_system(entry: ash::Entry, request: &render::SystemRequest) -> Option<Box<dyn render::System>> {
         log::trace!("render_vulkan::System::init_render_system");
 
-        let app_info = vk::ApplicationInfo::builder()
-            .api_version(ash::vk_make_version!(1, 1, 0))
-            .build();
-
-        let create_info = vk::InstanceCreateInfo::builder()
-            .application_info(&app_info)
-            .build();
-
-        match unsafe { entry.create_instance(&create_info, None) } {
-            Ok(instance) => Self::init_vk_render_devices(instance, request),
+        let create_info = Self::get_vk_instance_create_info(request);
+        let vk_allocation_callbacks = Self::get_vk_allocation_callbacks();
+        match unsafe { entry.create_instance(&create_info, vk_allocation_callbacks.as_ref()) } {
+            Ok(instance) => {
+                let mut system = Box::new(System {
+                    vk_instance: instance,
+                    vk_allocation_callbacks: vk_allocation_callbacks,
+                    devices: vec![],
+                });
+                if let Ok(_) = system.init_vk_render_devices(request) {
+                    Some(system)
+                } else {
+                    None
+                }
+            },
             Err(error) => {
                 log::error!("Cannot create vulkan instance. Error = {}.", error);
                 None
@@ -44,11 +82,8 @@ impl System {
         }
     }
 
-    fn init_vk_render_devices(instance: ash::Instance, request: &render::SystemRequest) -> Option<Box<dyn render::System>> {
-        Some(Box::new(System {
-            vk_instance: instance,
-            devices: vec![],
-        }))
+    fn init_vk_render_devices(&mut self, _request: &render::SystemRequest) -> Result<(),()> {
+        Ok(())
     }
 }
 

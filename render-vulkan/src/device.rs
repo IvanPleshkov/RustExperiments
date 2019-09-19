@@ -1,14 +1,14 @@
 use render;
-use ash;
+// use ash;
 
 pub struct VulkanRenderDevice {
 
 }
 
 impl VulkanRenderDevice {
-    pub fn new(vk_instance: ash::Instance, device_index: usize) -> Option<VulkanRenderDevice> {
-        None
-    }
+    //pub fn new(vk_instance: ash::Instance, device_index: usize) -> Option<VulkanRenderDevice> {
+    //    None
+    //}
 }
 
 impl render::Device for VulkanRenderDevice {
