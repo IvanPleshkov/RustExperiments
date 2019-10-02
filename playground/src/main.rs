@@ -7,7 +7,7 @@ fn main() {
             v.push(Vec::with_capacity(100_000_000_000))
         }
     }).join();
-    if let Err(e) = res {
+    if let Err(_e) = res {
         println!("Thread paniced!");
     }
 }

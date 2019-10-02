@@ -1,7 +1,11 @@
+use core::trace::*;
+use core::trace;
 use render;
-use crate::device::VulkanRenderDevice;
+use crate::device::Device;
 use ash::vk;
 use ash::version::EntryV1_0;
+use ash::version::InstanceV1_0;
+//use ash::version::DeviceV1_0;
 
 pub struct System {
 
@@ -9,13 +13,17 @@ pub struct System {
 
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
 
-    pub devices: Vec<Box<VulkanRenderDevice>>,
+    pub devices: Vec<Device>,
 }
 
 impl System {
 
     pub fn new(request: &render::SystemRequest) -> Option<Box<dyn render::System>> {
-        log::trace!("render_vulkan::System::new");
+        trace!("System", "new");
+
+        if request.api_name != render::SystemRequest::vulkan_name() || request.first_unsupported_version.major >= 2 {
+            //return None;
+        }
 
         match ash::Entry::new() {
             Ok(entry) => Self::init_render_system(entry, request),
@@ -27,10 +35,14 @@ impl System {
     }
 
     fn get_vk_allocation_callbacks() -> Option<vk::AllocationCallbacks> {
+        trace!("System", "get_vk_allocation_callbacks");
+
         None
     }
 
     fn get_vk_instance_create_info(request: &render::SystemRequest) -> vk::InstanceCreateInfo {
+        trace!("System", "get_vk_instance_create_info");
+
         let app_info = vk::ApplicationInfo::builder()
             .application_name(std::ffi::CString::new(
                 request.application_name.clone()).unwrap().as_c_str())
@@ -50,15 +62,29 @@ impl System {
                 request.min_supported_version.patch))
             .build();
 
+        let mut extensions : Vec<std::ffi::CString> = Vec::new();
+        let mut extension_ptrs : Vec<*const std::os::raw::c_char> = Vec::new();
+        for extension_name in &request.extensions {
+            extensions.push(std::ffi::CString::new(extension_name.clone()).unwrap());
+            extension_ptrs.push(extensions.last().unwrap().as_ptr())
+        }
+
+        let mut layers : Vec<std::ffi::CString> = Vec::new();
+        let mut layer_ptrs : Vec<*const std::os::raw::c_char> = Vec::new();
+        for layer_name in &request.layers {
+            layers.push(std::ffi::CString::new(layer_name.clone()).unwrap());
+            layer_ptrs.push(extensions.last().unwrap().as_ptr())
+        }
+
         vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            //.enabled_extension_names(enabled_extension_names: &'a [*const c_char])
-            //.enabled_layer_names(enabled_layer_names: &'a [*const c_char])
+            .enabled_extension_names(extension_ptrs.as_slice())
+            .enabled_layer_names(layer_ptrs.as_slice())
             .build()
     }
 
     fn init_render_system(entry: ash::Entry, request: &render::SystemRequest) -> Option<Box<dyn render::System>> {
-        log::trace!("render_vulkan::System::init_render_system");
+        trace!("System", "init_render_system");
 
         let create_info = Self::get_vk_instance_create_info(request);
         let vk_allocation_callbacks = Self::get_vk_allocation_callbacks();
@@ -83,7 +109,21 @@ impl System {
     }
 
     fn init_vk_render_devices(&mut self, _request: &render::SystemRequest) -> Result<(),()> {
-        Ok(())
+        trace!("System", "init_vk_render_devices");
+
+        if let Ok(vk_physical_devices) = unsafe { self.vk_instance.enumerate_physical_devices() } {
+            for vk_device in vk_physical_devices {
+                if let Ok(device) = Device::new(&self, vk_device) {
+                    self.devices.push(device);
+                }
+            }
+        }
+
+        if self.devices.is_empty() {
+            Err(())
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -96,8 +136,8 @@ mod tests {
 
     #[test]
     fn create_vulkan_render_system() {
-        log::warn!("Start test");
-
+        trace!("TEST_CASE", "create_vulkan_render_system");
+    
         let default_params = render::SystemRequest::request_vulkan_debug();
         let render_system = System::new(&default_params);
         assert_eq!(render_system.is_some(), true);
