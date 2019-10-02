@@ -1,8 +1,8 @@
 mod device;
 mod system;
 
-pub use self::system::*;
 pub use self::device::*;
+pub use self::system::*;
 
 #[cfg(test)]
 mod tests {

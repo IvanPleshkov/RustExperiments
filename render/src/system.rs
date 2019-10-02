@@ -1,19 +1,16 @@
 use semver;
 
 pub trait System {
-
     // fn render_devices_count() -> usize;
 
     // fn get_render_device(&self) -> &Box<RenderDevice>;
 }
 
 pub trait SystemFabric {
-
     fn create(request: &SystemRequest) -> Box<dyn System>;
 }
 
 pub enum DeviceFeature {
-
     TesselationShaders,
 
     GeometryShaders,
@@ -22,7 +19,6 @@ pub enum DeviceFeature {
 }
 
 pub struct SystemRequest {
-
     pub api_name: String,
 
     pub min_supported_version: semver::Version,
@@ -59,7 +55,6 @@ pub struct SystemRequest {
 }
 
 impl SystemRequest {
-
     pub fn request_vulkan_debug() -> SystemRequest {
         SystemRequest {
             api_name: Self::vulkan_name(),

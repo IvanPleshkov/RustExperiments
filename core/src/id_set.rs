@@ -1,16 +1,14 @@
-use optional::Optioned;
-use optional::Noned;
-use std::marker::PhantomData;
-use std::default::Default;
 use num_traits::sign::Unsigned;
+use optional::Noned;
+use optional::Optioned;
+use std::default::Default;
+use std::marker::PhantomData;
 
-pub trait IdIndex : Unsigned + Into<usize> + From<usize> + Copy { }
+pub trait IdIndex: Unsigned + Into<usize> + From<usize> + Copy {}
 
-pub trait IdGeneration : Unsigned + Into<usize> + From<usize> + Copy { }
+pub trait IdGeneration: Unsigned + Into<usize> + From<usize> + Copy {}
 
-pub trait Id<TIndex : IdIndex, TGeneration : IdGeneration> : Noned + Clone + Copy + Sized
-{
-
+pub trait Id<TIndex: IdIndex, TGeneration: IdGeneration>: Noned + Clone + Copy + Sized {
     fn new(index: TIndex, generation: TGeneration) -> Self;
 
     fn get_index(&self) -> TIndex;
@@ -22,11 +20,12 @@ pub trait Id<TIndex : IdIndex, TGeneration : IdGeneration> : Noned + Clone + Cop
     }
 }
 
-pub struct IdSet<T, TIndex, TGeneration, TId> where
+pub struct IdSet<T, TIndex, TGeneration, TId>
+where
     T: Default,
     TIndex: IdIndex,
     TGeneration: IdGeneration,
-    TId : Id<TIndex, TGeneration>,
+    TId: Id<TIndex, TGeneration>,
 {
     _generations: Vec<TGeneration>,
     _free_indicies: Vec<TIndex>,
@@ -35,13 +34,13 @@ pub struct IdSet<T, TIndex, TGeneration, TId> where
     phantom: PhantomData<TId>,
 }
 
-impl<T, TIndex, TGeneration, TId> IdSet<T, TIndex, TGeneration, TId> where
+impl<T, TIndex, TGeneration, TId> IdSet<T, TIndex, TGeneration, TId>
+where
     T: Default,
     TIndex: IdIndex,
     TGeneration: IdGeneration,
-    TId : Id<TIndex, TGeneration>,
+    TId: Id<TIndex, TGeneration>,
 {
-
     pub fn new() -> Self {
         IdSet {
             _generations: Vec::new(),

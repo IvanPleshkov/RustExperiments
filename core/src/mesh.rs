@@ -1,7 +1,7 @@
-use cgmath::Vector3;
+use cgmath::BaseFloat;
 use cgmath::Point2;
 use cgmath::Point3;
-use cgmath::BaseFloat;
+use cgmath::Vector3;
 
 pub struct Mesh<T: BaseFloat> {
     pub triangles: Vector3<i32>,

@@ -1,4 +1,3 @@
-
 pub struct TraceMessage {
     pub exit_message: &'static str,
 }
@@ -23,8 +22,26 @@ macro_rules! trace {
     // `()` indicates that the macro takes no argument.
     ($struct_name:expr, $method_name:expr) => {
         let _trace_variable = TraceMessage::new(
-            concat!("ENTER: ", std::file!(), "(", std::line!(), "), ", $struct_name, "::", $method_name),
-            concat!("LEAVE: ", std::file!(), "(", std::line!(), "), ", $struct_name, "::", $method_name),
-            );
+            concat!(
+                "ENTER: ",
+                std::file!(),
+                "(",
+                std::line!(),
+                "), ",
+                $struct_name,
+                "::",
+                $method_name
+            ),
+            concat!(
+                "LEAVE: ",
+                std::file!(),
+                "(",
+                std::line!(),
+                "), ",
+                $struct_name,
+                "::",
+                $method_name
+            ),
+        );
     };
 }
