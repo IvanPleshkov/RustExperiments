@@ -7,6 +7,6 @@ edition = "2018"
 [dependencies]
 core = { path = "../core" }
 render = { path = "../render" }
-# vulkano = "0.14.0"
 ash = "0.29.0"
 log = "0.4"
+semver = "0.7.0"

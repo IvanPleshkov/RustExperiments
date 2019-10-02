@@ -219,6 +219,7 @@ dependencies = [
  "core 0.1.0",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "render 0.1.0",
+ "semver 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

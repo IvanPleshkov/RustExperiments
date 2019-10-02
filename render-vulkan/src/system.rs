@@ -1,4 +1,5 @@
 use crate::device::Device;
+use crate::vk_utils;
 use ash::version::EntryV1_0;
 use ash::version::InstanceV1_0;
 use ash::vk;
@@ -49,25 +50,15 @@ impl System {
                     .unwrap()
                     .as_c_str(),
             )
-            .application_version(ash::vk_make_version!(
-                request.application_version.major,
-                request.application_version.minor,
-                request.application_version.patch
-            ))
+            .application_version(vk_utils::semver_to_vk_version(&request.application_version))
             .engine_name(
                 std::ffi::CString::new(request.engine_name.clone())
                     .unwrap()
                     .as_c_str(),
             )
-            .engine_version(ash::vk_make_version!(
-                request.application_version.major,
-                request.application_version.minor,
-                request.application_version.patch
-            ))
-            .api_version(ash::vk_make_version!(
-                request.min_supported_version.major,
-                request.min_supported_version.minor,
-                request.min_supported_version.patch
+            .engine_version(vk_utils::semver_to_vk_version(&request.engine_version))
+            .api_version(vk_utils::semver_to_vk_version(
+                &request.min_supported_version,
             ))
             .build();
 
@@ -120,14 +111,19 @@ impl System {
         }
     }
 
-    fn init_vk_render_devices(&mut self, _request: &render::SystemRequest) -> Result<(), ()> {
+    fn init_vk_render_devices(&mut self, request: &render::SystemRequest) -> Result<(), ()> {
         trace!("System", "init_vk_render_devices");
 
-        if let Ok(vk_physical_devices) = unsafe { self.vk_instance.enumerate_physical_devices() } {
-            for vk_device in vk_physical_devices {
-                if let Ok(device) = Device::new(&self, vk_device) {
-                    self.devices.push(device);
+        match unsafe { self.vk_instance.enumerate_physical_devices() } {
+            Ok(vk_physical_devices) => {
+                for vk_device in vk_physical_devices {
+                    if let Ok(device) = Device::new(&self, vk_device, request) {
+                        self.devices.push(device);
+                    }
                 }
+            }
+            Err(error) => {
+                log::error!("Cannot enumerate physical devices. Error = {}.", error);
             }
         }
 
@@ -136,6 +132,12 @@ impl System {
         } else {
             Ok(())
         }
+    }
+}
+
+impl Drop for System {
+    fn drop(&mut self) {
+        trace!("System", "init_vk_render_devices");
     }
 }
 
@@ -149,8 +151,7 @@ mod tests {
     fn create_vulkan_render_system() {
         trace!("TEST_CASE", "create_vulkan_render_system");
 
-        let default_params = render::SystemRequest::request_vulkan_debug();
-        let render_system = System::new(&default_params);
+        let render_system = System::new(&render::SystemRequest::request_vulkan_debug());
         assert_eq!(render_system.is_some(), true);
     }
 }
