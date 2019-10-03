@@ -20,10 +20,9 @@ impl System {
     pub fn new(request: &render::SystemRequest) -> Option<Box<dyn render::System>> {
         trace!("System", "new");
 
-        if request.api_name != render::SystemRequest::vulkan_name()
-            || request.first_unsupported_version.major >= 2
+        if request.api_name != render::SystemRequest::vulkan_name() || request.first_unsupported_version.major < 2
         {
-            //return None;
+            return None;
         }
 
         match ash::Entry::new() {
@@ -95,7 +94,7 @@ impl System {
             Ok(instance) => {
                 let mut system = Box::new(System {
                     vk_instance: instance,
-                    vk_allocation_callbacks: vk_allocation_callbacks,
+                    vk_allocation_callbacks,
                     devices: vec![],
                 });
                 if let Ok(_) = system.init_vk_render_devices(request) {
