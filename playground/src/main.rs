@@ -1,13 +1,12 @@
-use std::thread;
+use std::any::Any;
+use nalgebra::Vector3;
+use std::fmt::Display;
 
 fn main() {
-    let res = thread::spawn(move || {
-        let mut v : Vec<Vec<u8>> = Vec::new();
-        loop {
-            v.push(Vec::with_capacity(100_000_000_000))
-        }
-    }).join();
-    if let Err(e) = res {
-        println!("Thread paniced!");
-    }
+    let x = nalgebra::Vector3::new(0.0, 0.0, 0.0);
+    log(Box::new(x))
+}
+
+fn log(value: Box<Any + 'static>) {
+    let x: Result<Box<&str>, _> = value.downcast();
 }

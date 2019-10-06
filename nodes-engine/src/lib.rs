@@ -1,8 +1,5 @@
-mod device;
-mod system;
-
-pub use self::device::*;
-pub use self::system::*;
+pub mod value;
+pub mod function;
 
 #[cfg(test)]
 mod tests {

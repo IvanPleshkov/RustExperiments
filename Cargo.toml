@@ -1,6 +1,8 @@
 [workspace]
 members = [
+    "common",
     "render",
     "render-vulkan",
+    "nodes-engine",
     "playground",
 ]
