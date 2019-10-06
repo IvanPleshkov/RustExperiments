@@ -147,13 +147,13 @@ impl render::System for System {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    // use common::init_logger;
+    // use common::init_logger::*;
 
     #[test]
     fn create_vulkan_render_system() {
-        trace!("TEST_CASE", "create_vulkan_render_system");
-        common::init_logger().unwrap();
+        common::init_test_logger!("create_vulkan_render_system");
 
-        log::error!("SOME MESSAGE");
         let render_system = System::new(&render::SystemRequest::request_vulkan_debug());
         assert_eq!(render_system.is_some(), true);
     }

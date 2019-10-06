@@ -23,3 +23,11 @@ pub fn init_logger() -> Result<(), fern::InitError> {
 
     Ok(())
 }
+
+#[macro_export]
+macro_rules! init_test_logger {
+    ($test_name:expr) => {
+        common::init_logger().unwrap();
+        trace!("TEST_CASE", $test_name);
+    };
+}
