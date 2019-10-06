@@ -1,5 +1,6 @@
 use nalgebra::Vector2;
 use nalgebra::Vector3;
+use log;
 
 pub enum DeviceType {
     Unknown,
@@ -136,12 +137,17 @@ pub trait Device {
     fn device_info(&self) -> &DeviceInfo;
 
     // fn create_comamnd_buffer(&mut self) -> RenderCommandBuffer;
+
     // fn submit_command_buffer(&mut self);
+
     // fn render_device_features(&self) -> &RenderDeviceFeatures;
 }
 
 impl DeviceInfo {
-    pub fn log(&self) {
 
+    pub fn log(&self) {
+        log::info!("Device info:");
+        log::info!("Vendor: {}, Name: {}", self.vendor, self.name);
+        log::info!("Driver version: {}", self.driver_vesrion);
     }
 }

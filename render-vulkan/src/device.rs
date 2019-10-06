@@ -50,8 +50,16 @@ impl Device {
 
     fn get_device_info(vk_physical_device_properties: &ash::vk::PhysicalDeviceProperties) -> render::DeviceInfo {
 
+        let mut device_name_copy = vk_physical_device_properties.device_name.clone();
+        let device_name_casted_slice = unsafe { &*(&mut device_name_copy as *mut [i8] as *mut [u8]) };
+        let device_name = if let Ok(name) = std::str::from_utf8(device_name_casted_slice) {
+            String::from(name)
+         } else {
+            String::new()
+         };
+
         render::DeviceInfo {
-            name: String::new(),
+            name: device_name,
             vendor: Self::get_vendor_name(vk_physical_device_properties.vendor_id),
             driver_vesrion: vk_utils::vk_version_to_semver(vk_physical_device_properties.driver_version),
             device_type: Self::get_device_type(&vk_physical_device_properties),
