@@ -4,8 +4,8 @@ use ash::version::DeviceV1_0;
 use ash::version::EntryV1_0;
 use ash::version::InstanceV1_0;
 use ash::vk;
-use core::trace;
-use core::trace::*;
+use common::trace;
+use common::trace::*;
 use render;
 
 pub struct Device {
@@ -15,24 +15,20 @@ pub struct Device {
 
     // pub vk_device: ash::Device;
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
+
+    pub device_type: render::DeviceType,
 }
 
 impl Device {
-    pub fn new(
-        system: &System,
-        vk_physical_device: ash::vk::PhysicalDevice,
-        request: &render::SystemRequest,
-    ) -> Result<Device, ()> {
+    pub fn new(system: &System, vk_physical_device: ash::vk::PhysicalDevice, request: &render::SystemRequest) -> Result<Device, ()> {
         trace!("Device", "new");
 
-        let physical_device_properties = unsafe {
+        let vk_physical_device_properties = unsafe {
             system
                 .vk_instance
                 .get_physical_device_properties(vk_physical_device)
         };
-        let device_vulkan_version =
-            vk_utils::vk_version_to_semver(physical_device_properties.api_version);
-        if device_vulkan_version >= request.first_unsupported_version {
+        if !Self::is_passed_vk_version(&vk_physical_device_properties, request) {
             return Err(());
         }
 
@@ -40,12 +36,38 @@ impl Device {
             vk_instance: system.vk_instance.clone(),
             vk_physical_device: vk_physical_device,
             vk_allocation_callbacks: system.vk_allocation_callbacks,
+            device_type: Self::get_device_type(&vk_physical_device_properties),
         })
+    }
+
+    fn is_passed_vk_version(vk_physical_device_properties: &ash::vk::PhysicalDeviceProperties, request: &render::SystemRequest) -> bool {
+        let device_vulkan_version =
+            vk_utils::vk_version_to_semver(vk_physical_device_properties.api_version);
+        log::info!("Device VK version: {}", device_vulkan_version);
+
+        if device_vulkan_version >= request.min_supported_version && device_vulkan_version < request.first_unsupported_version {
+            true
+        } else {
+            log::info!("Device does not match reques version (from {} to {}).", request.min_supported_version, request.first_unsupported_version);
+            false
+        }
+    }
+
+    fn get_device_type(vk_physical_device_properties: &ash::vk::PhysicalDeviceProperties) -> render::DeviceType {
+        match vk_physical_device_properties.device_type {
+            ash::vk::PhysicalDeviceType::DISCRETE_GPU => render::DeviceType::Discrete,
+            ash::vk::PhysicalDeviceType::INTEGRATED_GPU => render::DeviceType::Integrated,
+            ash::vk::PhysicalDeviceType::VIRTUAL_GPU => render::DeviceType::Virtual,
+            ash::vk::PhysicalDeviceType::CPU => render::DeviceType::Software,
+            _ => render::DeviceType::Unknown,
+        }
     }
 }
 
 impl Drop for Device {
-    fn drop(&mut self) {}
+    fn drop(&mut self) {
+        trace!("Device", "Drop");
+    }
 }
 
 impl render::Device for Device {}

@@ -3,8 +3,8 @@ use crate::vk_utils;
 use ash::version::EntryV1_0;
 use ash::version::InstanceV1_0;
 use ash::vk;
-use core::trace;
-use core::trace::*;
+use common::trace;
+use common::trace::*;
 use render;
 //use ash::version::DeviceV1_0;
 
@@ -127,6 +127,7 @@ impl System {
         }
 
         if self.devices.is_empty() {
+            log::info!("No passed VK devices.");
             Err(())
         } else {
             Ok(())
@@ -136,7 +137,8 @@ impl System {
 
 impl Drop for System {
     fn drop(&mut self) {
-        trace!("System", "init_vk_render_devices");
+        trace!("System", "Drop");
+        self.devices.clear();
     }
 }
 
@@ -149,7 +151,9 @@ mod tests {
     #[test]
     fn create_vulkan_render_system() {
         trace!("TEST_CASE", "create_vulkan_render_system");
+        common::init_logger().unwrap();
 
+        log::error!("SOME MESSAGE");
         let render_system = System::new(&render::SystemRequest::request_vulkan_debug());
         assert_eq!(render_system.is_some(), true);
     }

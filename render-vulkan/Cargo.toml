@@ -5,8 +5,10 @@ authors = ["Ivan Pleshkov <pleshkov.ivan@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-core = { path = "../core" }
+common = { path = "../common" }
 render = { path = "../render" }
-ash = "0.29.0"
 log = "0.4"
+fern = "0.5.8"
+nalgebra = "0.18.1"
+ash = "0.29.0"
 semver = "0.7.0"
