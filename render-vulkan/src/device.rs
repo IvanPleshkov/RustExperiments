@@ -27,6 +27,25 @@ pub struct Heap {
     pub is_lazily_allocated: bool,
 }
 
+pub struct Queue {
+
+    pub vk_queue_family_index: usize,
+
+    pub vk_queue_index: usize,
+    
+    pub support_graphics: bool,
+
+    pub support_compute: bool,
+
+    pub support_transfer: bool,
+
+    pub support_sparse_bindings: bool,
+
+    pub timestamp_valid_bits: Option<u32>,
+
+    pub min_image_transfer_granularity: Vector3<u32>,
+}
+
 pub struct Device {
 
     pub info: render::DeviceInfo,
@@ -39,6 +58,8 @@ pub struct Device {
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
 
     pub vk_heaps: Vec<Heap>,
+
+    pub vk_queues: Vec<Queue>,
 }
 
 impl Device {
@@ -64,6 +85,7 @@ impl Device {
             vk_physical_device: vk_physical_device,
             vk_allocation_callbacks: system.vk_allocation_callbacks,
             vk_heaps: Self::get_vk_heaps(system, vk_physical_device),
+            vk_queues: Self::get_vk_queues(system, vk_physical_device),
         })
     }
 
@@ -262,7 +284,6 @@ impl Device {
 
     fn get_vk_heaps(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Heap> {
         let mut heaps : Vec<Heap> = Vec::new();
-
         let vk_memory_properties = unsafe { system.vk_instance.get_physical_device_memory_properties(vk_physical_device) };
         for i in 0..vk_memory_properties.memory_type_count {
             let vk_memory = &vk_memory_properties.memory_types[i as usize];
@@ -280,6 +301,35 @@ impl Device {
         }
 
         heaps
+    }
+
+    fn get_vk_queues(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Queue> {
+        let mut queues : Vec<Queue> = Vec::new();
+        let vk_queue_family_properties = unsafe { system.vk_instance.get_physical_device_queue_family_properties(vk_physical_device) };
+        for q in 0..vk_queue_family_properties.len() {
+            let vk_queue_family = &vk_queue_family_properties[q];
+            let timestamp_valid_bits = if vk_queue_family.timestamp_valid_bits > 0 {
+                Some(vk_queue_family.timestamp_valid_bits)
+            } else {
+                None
+            };
+            for i in 0..vk_queue_family.queue_count {
+                queues.push(Queue {
+                    vk_queue_family_index: q,
+                    vk_queue_index: i as usize,
+                    support_graphics: vk_queue_family.queue_flags.contains(ash::vk::QueueFlags::GRAPHICS),
+                    support_compute: vk_queue_family.queue_flags.contains(ash::vk::QueueFlags::COMPUTE),
+                    support_transfer: vk_queue_family.queue_flags.contains(ash::vk::QueueFlags::TRANSFER),
+                    support_sparse_bindings: vk_queue_family.queue_flags.contains(ash::vk::QueueFlags::SPARSE_BINDING),
+                    timestamp_valid_bits: timestamp_valid_bits,
+                    min_image_transfer_granularity: Vector3::new(
+                        vk_queue_family.min_image_transfer_granularity.width,
+                        vk_queue_family.min_image_transfer_granularity.height,
+                        vk_queue_family.min_image_transfer_granularity.depth),
+                });
+            };
+        };
+        queues
     }
 }
 
