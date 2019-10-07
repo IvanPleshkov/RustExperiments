@@ -50,6 +50,8 @@ pub struct Device {
 
     pub info: render::DeviceInfo,
 
+    pub vk_device: ash::Device,
+
     pub vk_instance: ash::Instance,
 
     pub vk_physical_device: ash::vk::PhysicalDevice,
@@ -79,14 +81,56 @@ impl Device {
             return Err(());
         }
 
+        Self::create_vk_device(system, vk_physical_device, request, device_info)
+    }
+
+    fn create_vk_device(
+        system: &System,
+        vk_physical_device: ash::vk::PhysicalDevice,
+        request: &render::SystemRequest,
+        device_info: render::DeviceInfo) -> Result<Device, ()>
+    {
+        trace!("Device", "create_vk_device");
+
+        let heaps = Self::get_heaps(system, vk_physical_device);
+        let queues = Self::get_queues(system, vk_physical_device);
+
+        let queue_create_infos = Self::get_vk_create_queue_create_infos(&queues);
+        let vk_device_create_info = vk::DeviceCreateInfo::builder()
+            .queue_create_infos(queue_create_infos.as_slice())
+            // .enabled_layer_names(enabled_layer_names: &'a [*const c_char])
+            // .enabled_extension_names(enabled_extension_names: &'a [*const c_char])
+            // .enabled_features(enabled_features: &'a PhysicalDeviceFeatures)
+            .build();
+        let vk_device = match unsafe { system.vk_instance.create_device(
+            vk_physical_device,
+            &vk_device_create_info,
+            system.vk_allocation_callbacks.as_ref(),
+        )} {
+            Ok(vk_device) => {
+                log::debug!("Vulkan device successfully created.");
+                Ok(vk_device)
+            },
+            Err(error) => {
+                log::error!("Cannot create vulkan device. Error = {}.", error);
+                Err(())
+            }
+        }?;
+        
         Ok(Device {
             info: device_info,
+            vk_device: vk_device,
             vk_instance: system.vk_instance.clone(),
             vk_physical_device: vk_physical_device,
             vk_allocation_callbacks: system.vk_allocation_callbacks,
-            vk_heaps: Self::get_vk_heaps(system, vk_physical_device),
-            vk_queues: Self::get_vk_queues(system, vk_physical_device),
+            vk_heaps: heaps,
+            vk_queues: queues,
         })
+    }
+
+    fn get_vk_create_queue_create_infos(queues: &Vec<Queue>) -> Vec<ash::vk::DeviceQueueCreateInfo> {
+        let mut infos = Vec::new();
+        infos
     }
 
     fn get_device_info(vk_physical_device_properties: &ash::vk::PhysicalDeviceProperties) -> render::DeviceInfo {
@@ -282,7 +326,7 @@ impl Device {
         }
     }
 
-    fn get_vk_heaps(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Heap> {
+    fn get_heaps(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Heap> {
         let mut heaps : Vec<Heap> = Vec::new();
         let vk_memory_properties = unsafe { system.vk_instance.get_physical_device_memory_properties(vk_physical_device) };
         for i in 0..vk_memory_properties.memory_type_count {
@@ -303,7 +347,7 @@ impl Device {
         heaps
     }
 
-    fn get_vk_queues(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Queue> {
+    fn get_queues(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Queue> {
         let mut queues : Vec<Queue> = Vec::new();
         let vk_queue_family_properties = unsafe { system.vk_instance.get_physical_device_queue_family_properties(vk_physical_device) };
         for q in 0..vk_queue_family_properties.len() {
