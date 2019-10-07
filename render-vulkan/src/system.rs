@@ -9,6 +9,7 @@ use render;
 //use ash::version::DeviceV1_0;
 
 pub struct System {
+
     pub vk_instance: ash::Instance,
 
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,

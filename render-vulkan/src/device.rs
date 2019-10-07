@@ -10,6 +10,23 @@ use render;
 use nalgebra::Vector2;
 use nalgebra::Vector3;
 
+pub struct Heap {
+
+    pub index: usize,
+
+    pub size: u64,
+
+    pub is_device_local: bool,
+
+    pub is_host_visible: bool,
+
+    pub is_host_coherent: bool,
+
+    pub is_host_cached: bool,
+
+    pub is_lazily_allocated: bool,
+}
+
 pub struct Device {
 
     pub info: render::DeviceInfo,
@@ -21,6 +38,7 @@ pub struct Device {
     // pub vk_device: ash::Device;
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
 
+    pub vk_heaps: Vec<Heap>,
 }
 
 impl Device {
@@ -45,6 +63,7 @@ impl Device {
             vk_instance: system.vk_instance.clone(),
             vk_physical_device: vk_physical_device,
             vk_allocation_callbacks: system.vk_allocation_callbacks,
+            vk_heaps: Self::get_vk_heaps(system, vk_physical_device),
         })
     }
 
@@ -239,6 +258,28 @@ impl Device {
             ash::vk::SampleCountFlags::TYPE_64 => 64,
             _ => 0,
         }
+    }
+
+    fn get_vk_heaps(system: &System, vk_physical_device: ash::vk::PhysicalDevice) -> Vec<Heap> {
+        let mut heaps : Vec<Heap> = Vec::new();
+
+        let vk_memory_properties = unsafe { system.vk_instance.get_physical_device_memory_properties(vk_physical_device) };
+        for i in 0..vk_memory_properties.memory_type_count {
+            let vk_memory = &vk_memory_properties.memory_types[i as usize];
+            let vk_heap = &vk_memory_properties.memory_heaps[vk_memory.heap_index as usize];
+            
+            heaps.push(Heap {
+                index: i as usize,
+                size: vk_heap.size,
+                is_device_local: vk_memory.property_flags.contains(ash::vk::MemoryPropertyFlags::DEVICE_LOCAL),
+                is_host_visible: vk_memory.property_flags.contains(ash::vk::MemoryPropertyFlags::HOST_VISIBLE),
+                is_host_coherent: vk_memory.property_flags.contains(ash::vk::MemoryPropertyFlags::HOST_COHERENT),
+                is_host_cached: vk_memory.property_flags.contains(ash::vk::MemoryPropertyFlags::HOST_CACHED),
+                is_lazily_allocated: vk_memory.property_flags.contains(ash::vk::MemoryPropertyFlags::LAZILY_ALLOCATED),
+            });
+        }
+
+        heaps
     }
 }
 
