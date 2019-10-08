@@ -129,7 +129,23 @@ impl Device {
     }
 
     fn get_vk_create_queue_create_infos(queues: &Vec<Queue>) -> Vec<ash::vk::DeviceQueueCreateInfo> {
-        let mut infos = Vec::new();
+        let mut infos : Vec<ash::vk::DeviceQueueCreateInfo> = Vec::new();
+        for queue in queues {
+            let mut need_new_info = true;
+            for info in &mut infos {
+                if info.queue_family_index == queue.vk_queue_family_index as u32 {
+                    info.queue_count = std::cmp::max(info.queue_count, (queue.vk_queue_index + 1) as u32);
+                    need_new_info = false;
+                }
+            }
+            if need_new_info {
+                let mut info = ash::vk::DeviceQueueCreateInfo::builder()
+                    .queue_family_index(queue.vk_queue_family_index as u32)
+                    .build();
+                info.queue_count = (queue.vk_queue_index + 1) as u32;
+                infos.push(info);
+            }
+        }
         infos
     }
 
