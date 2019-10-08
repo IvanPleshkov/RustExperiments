@@ -95,12 +95,13 @@ impl Device {
         let heaps = Self::get_heaps(system, vk_physical_device);
         let queues = Self::get_queues(system, vk_physical_device);
 
-        let queue_create_infos = Self::get_vk_create_queue_create_infos(&queues);
+        let vk_queue_create_infos = Self::get_vk_create_queue_create_infos(&queues);
+        let vk_device_features = Self::get_vk_enabled_features(system, vk_physical_device, request)?;
         let vk_device_create_info = vk::DeviceCreateInfo::builder()
-            .queue_create_infos(queue_create_infos.as_slice())
+            // .queue_create_infos(vk_queue_create_infos.as_slice())
             // .enabled_layer_names(enabled_layer_names: &'a [*const c_char])
             // .enabled_extension_names(enabled_extension_names: &'a [*const c_char])
-            // .enabled_features(enabled_features: &'a PhysicalDeviceFeatures)
+            .enabled_features(&vk_device_features)
             .build();
         let vk_device = match unsafe { system.vk_instance.create_device(
             vk_physical_device,
@@ -147,6 +148,314 @@ impl Device {
             }
         }
         infos
+    }
+
+    fn get_vk_enabled_features(
+        system: &System,
+        vk_physical_device: ash::vk::PhysicalDevice,
+        request: &render::SystemRequest) -> Result<ash::vk::PhysicalDeviceFeatures, ()>
+    {
+        let vk_device_features = unsafe { system.vk_instance.get_physical_device_features(vk_physical_device) };
+
+        let f = |required: bool, enabled: bool, support: bool, feature_name: &str| {
+            if required && !support {
+                log::info!("Cannot init device because required feature is not supported: {}", feature_name);
+                return Err(())
+            }
+
+            if !support {
+                if enabled {
+                    log::info!("Device feature is not supported: {}", feature_name);
+                }
+                return Ok(false)
+            }
+
+            if required || enabled {
+                log::info!("Enable device feature: {}", feature_name);
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        };
+
+        let builder = ash::vk::PhysicalDeviceFeatures::builder()
+            .robust_buffer_access(f(
+                request.required_device_features.robust_buffer_access,
+                request.enabled_device_features.robust_buffer_access,
+                vk_device_features.robust_buffer_access > 0,
+                "Robust buffer access")?)
+            .full_draw_index_uint32(f(
+                request.required_device_features.full_draw_index_uint32,
+                request.enabled_device_features.full_draw_index_uint32,
+                vk_device_features.full_draw_index_uint32 > 0,
+                "Full draw index uint32")?)
+            .image_cube_array(f(
+                request.required_device_features.image_cube_array,
+                request.enabled_device_features.image_cube_array,
+                vk_device_features.image_cube_array > 0,
+                "Image cube array")?)
+            .independent_blend(f(
+                request.required_device_features.independent_blend,
+                request.enabled_device_features.independent_blend,
+                vk_device_features.independent_blend > 0,
+                "Independent blend")?)
+            .geometry_shader(f(
+                request.required_device_features.geometry_shader,
+                request.enabled_device_features.geometry_shader,
+                vk_device_features.geometry_shader > 0,
+                "Geometry shader")?)
+            .tessellation_shader(f(
+                request.required_device_features.tessellation_shader,
+                request.enabled_device_features.tessellation_shader,
+                vk_device_features.tessellation_shader > 0,
+                "Tessellation shader")?)
+            .sample_rate_shading(f(
+                request.required_device_features.sample_rate_shading,
+                request.enabled_device_features.sample_rate_shading,
+                vk_device_features.sample_rate_shading > 0,
+                "Sample rate shading")?)
+            .dual_src_blend(f(
+                request.required_device_features.dual_src_blend,
+                request.enabled_device_features.dual_src_blend,
+                vk_device_features.dual_src_blend > 0,
+                "Dual src blend")?)
+            .logic_op(f(
+                request.required_device_features.logic_op,
+                request.enabled_device_features.logic_op,
+                vk_device_features.logic_op > 0,
+                "Logic op")?)
+            .multi_draw_indirect(f(
+                request.required_device_features.multi_draw_indirect,
+                request.enabled_device_features.multi_draw_indirect,
+                vk_device_features.multi_draw_indirect > 0,
+                "Multi draw indirect")?)
+            .draw_indirect_first_instance(f(
+                request.required_device_features.draw_indirect_first_instance,
+                request.enabled_device_features.draw_indirect_first_instance,
+                vk_device_features.draw_indirect_first_instance > 0,
+                "Draw indirect first instance")?)
+            .depth_clamp(f(
+                request.required_device_features.depth_clamp,
+                request.enabled_device_features.depth_clamp,
+                vk_device_features.depth_clamp > 0,
+                "Depth clamp")?)
+            .depth_bias_clamp(f(
+                request.required_device_features.depth_bias_clamp,
+                request.enabled_device_features.depth_bias_clamp,
+                vk_device_features.depth_bias_clamp > 0,
+                "Depth bias clamp")?)
+            .fill_mode_non_solid(f(
+                request.required_device_features.fill_mode_non_solid,
+                request.enabled_device_features.fill_mode_non_solid,
+                vk_device_features.fill_mode_non_solid > 0,
+                "Fill mode non solid")?)
+            .depth_bounds(f(
+                request.required_device_features.depth_bounds,
+                request.enabled_device_features.depth_bounds,
+                vk_device_features.depth_bounds > 0,
+                "Depth bounds")?)
+            .wide_lines(f(
+                request.required_device_features.wide_lines,
+                request.enabled_device_features.wide_lines,
+                vk_device_features.wide_lines > 0,
+                "Wide lines")?)
+            .large_points(f(
+                request.required_device_features.large_points,
+                request.enabled_device_features.large_points,
+                vk_device_features.large_points > 0,
+                "Large points")?)
+            .alpha_to_one(f(
+                request.required_device_features.alpha_to_one,
+                request.enabled_device_features.alpha_to_one,
+                vk_device_features.alpha_to_one > 0,
+                "Alpha to one")?)
+            .multi_viewport(f(
+                request.required_device_features.multi_viewport,
+                request.enabled_device_features.multi_viewport,
+                vk_device_features.multi_viewport > 0,
+                "Multi viewport")?)
+            .sampler_anisotropy(f(
+                request.required_device_features.sampler_anisotropy,
+                request.enabled_device_features.sampler_anisotropy,
+                vk_device_features.sampler_anisotropy > 0,
+                "Sampler anisotropy")?)
+            .texture_compression_etc2(f(
+                request.required_device_features.texture_compression_etc2,
+                request.enabled_device_features.texture_compression_etc2,
+                vk_device_features.texture_compression_etc2 > 0,
+                "Texture compression etc2")?)
+            .texture_compression_astc_ldr(f(
+                request.required_device_features.texture_compression_astc_ldr,
+                request.enabled_device_features.texture_compression_astc_ldr,
+                vk_device_features.texture_compression_astc_ldr > 0,
+                "Texture compression astc ldr")?)
+            .texture_compression_bc(f(
+                request.required_device_features.texture_compression_bc,
+                request.enabled_device_features.texture_compression_bc,
+                vk_device_features.texture_compression_bc > 0,
+                "Texture compression bc")?)
+            .occlusion_query_precise(f(
+                request.required_device_features.occlusion_query_precise,
+                request.enabled_device_features.occlusion_query_precise,
+                vk_device_features.occlusion_query_precise > 0,
+                "Occlusion query precise")?)
+            .pipeline_statistics_query(f(
+                request.required_device_features.pipeline_statistics_query,
+                request.enabled_device_features.pipeline_statistics_query,
+                vk_device_features.pipeline_statistics_query > 0,
+                "Pipeline statistics query")?)
+            .vertex_pipeline_stores_and_atomics(f(
+                request.required_device_features.vertex_pipeline_stores_and_atomics,
+                request.enabled_device_features.vertex_pipeline_stores_and_atomics,
+                vk_device_features.vertex_pipeline_stores_and_atomics > 0,
+                "Vertex pipeline stores and atomics")?)
+            .fragment_stores_and_atomics(f(
+                request.required_device_features.fragment_stores_and_atomics,
+                request.enabled_device_features.fragment_stores_and_atomics,
+                vk_device_features.fragment_stores_and_atomics > 0,
+                "Fragment stores and atomics")?)
+            .shader_tessellation_and_geometry_point_size(f(
+                request.required_device_features.shader_tessellation_and_geometry_point_size,
+                request.enabled_device_features.shader_tessellation_and_geometry_point_size,
+                vk_device_features.shader_tessellation_and_geometry_point_size > 0,
+                "Shader tessellation and geometry point size")?)
+            .shader_image_gather_extended(f(
+                request.required_device_features.shader_image_gather_extended,
+                request.enabled_device_features.shader_image_gather_extended,
+                vk_device_features.shader_image_gather_extended > 0,
+                "Shader image gather extended")?)
+            .shader_storage_image_extended_formats(f(
+                request.required_device_features.shader_storage_image_extended_formats,
+                request.enabled_device_features.shader_storage_image_extended_formats,
+                vk_device_features.shader_storage_image_extended_formats > 0,
+                "Shader storage image extended formats")?)
+            .shader_storage_image_multisample(f(
+                request.required_device_features.shader_storage_image_multisample,
+                request.enabled_device_features.shader_storage_image_multisample,
+                vk_device_features.shader_storage_image_multisample > 0,
+                "Shader storage image multisample")?)
+            .shader_storage_image_read_without_format(f(
+                request.required_device_features.shader_storage_image_read_without_format,
+                request.enabled_device_features.shader_storage_image_read_without_format,
+                vk_device_features.shader_storage_image_read_without_format > 0,
+                "Shader storage image read without format")?)
+            .shader_storage_image_write_without_format(f(
+                request.required_device_features.shader_storage_image_write_without_format,
+                request.enabled_device_features.shader_storage_image_write_without_format,
+                vk_device_features.shader_storage_image_write_without_format > 0,
+                "Shader storage image write without format")?)
+            .shader_uniform_buffer_array_dynamic_indexing(f(
+                request.required_device_features.shader_uniform_buffer_array_dynamic_indexing,
+                request.enabled_device_features.shader_uniform_buffer_array_dynamic_indexing,
+                vk_device_features.shader_uniform_buffer_array_dynamic_indexing > 0,
+                "Shader uniform buffer array dynamic indexing")?)
+            .shader_sampled_image_array_dynamic_indexing(f(
+                request.required_device_features.shader_sampled_image_array_dynamic_indexing,
+                request.enabled_device_features.shader_sampled_image_array_dynamic_indexing,
+                vk_device_features.shader_sampled_image_array_dynamic_indexing > 0,
+                "Shader sampled image array dynamic indexing")?)
+            .shader_storage_buffer_array_dynamic_indexing(f(
+                request.required_device_features.shader_storage_buffer_array_dynamic_indexing,
+                request.enabled_device_features.shader_storage_buffer_array_dynamic_indexing,
+                vk_device_features.shader_storage_buffer_array_dynamic_indexing > 0,
+                "Shader storage buffer array dynamic indexing")?)
+            .shader_storage_image_array_dynamic_indexing(f(
+                request.required_device_features.shader_storage_image_array_dynamic_indexing,
+                request.enabled_device_features.shader_storage_image_array_dynamic_indexing,
+                vk_device_features.shader_storage_image_array_dynamic_indexing > 0,
+                "Shader storage image array dynamic indexing")?)
+            .shader_clip_distance(f(
+                request.required_device_features.shader_clip_distance,
+                request.enabled_device_features.shader_clip_distance,
+                vk_device_features.shader_clip_distance > 0,
+                "Shader clip distance")?)
+            .shader_cull_distance(f(
+                request.required_device_features.shader_cull_distance,
+                request.enabled_device_features.shader_cull_distance,
+                vk_device_features.shader_cull_distance > 0,
+                "Shader cull distance")?)
+            .shader_float64(f(
+                request.required_device_features.shader_float64,
+                request.enabled_device_features.shader_float64,
+                vk_device_features.shader_float64 > 0,
+                "Shader float64")?)
+            .shader_int64(f(
+                request.required_device_features.shader_int64,
+                request.enabled_device_features.shader_int64,
+                vk_device_features.shader_int64 > 0,
+                "Shader int64")?)
+            .shader_int16(f(
+                request.required_device_features.shader_int16,
+                request.enabled_device_features.shader_int16,
+                vk_device_features.shader_int16 > 0,
+                "Shader int16")?)
+            .shader_resource_residency(f(
+                request.required_device_features.shader_resource_residency,
+                request.enabled_device_features.shader_resource_residency,
+                vk_device_features.shader_resource_residency > 0,
+                "Shader resource residency")?)
+            .shader_resource_min_lod(f(
+                request.required_device_features.shader_resource_min_lod,
+                request.enabled_device_features.shader_resource_min_lod,
+                vk_device_features.shader_resource_min_lod > 0,
+                "Shader resource min lod")?)
+            .sparse_binding(f(
+                request.required_device_features.sparse_binding,
+                request.enabled_device_features.sparse_binding,
+                vk_device_features.sparse_binding > 0,
+                "Sparse binding")?)
+            .sparse_residency_buffer(f(
+                request.required_device_features.sparse_residency_buffer,
+                request.enabled_device_features.sparse_residency_buffer,
+                vk_device_features.sparse_residency_buffer > 0,
+                "Sparse residency buffer")?)
+            .sparse_residency_image2_d(f(
+                request.required_device_features.sparse_residency_image2_d,
+                request.enabled_device_features.sparse_residency_image2_d,
+                vk_device_features.sparse_residency_image2_d > 0,
+                "Sparse residency image2d")?)
+            .sparse_residency_image3_d(f(
+                request.required_device_features.sparse_residency_image3_d,
+                request.enabled_device_features.sparse_residency_image3_d,
+                vk_device_features.sparse_residency_image3_d > 0,
+                "Sparse residency image3d")?)
+            .sparse_residency2_samples(f(
+                request.required_device_features.sparse_residency2_samples,
+                request.enabled_device_features.sparse_residency2_samples,
+                vk_device_features.sparse_residency2_samples > 0,
+                "Sparse residency2 samples")?)
+            .sparse_residency4_samples(f(
+                request.required_device_features.sparse_residency4_samples,
+                request.enabled_device_features.sparse_residency4_samples,
+                vk_device_features.sparse_residency4_samples > 0,
+                "Sparse residency4  samples")?)
+            .sparse_residency8_samples(f(
+                request.required_device_features.sparse_residency8_samples,
+                request.enabled_device_features.sparse_residency8_samples,
+                vk_device_features.sparse_residency8_samples > 0,
+                "Sparse  residency8 samples")?)
+            .sparse_residency16_samples(f(
+                request.required_device_features.sparse_residency16_samples,
+                request.enabled_device_features.sparse_residency16_samples,
+                vk_device_features.sparse_residency16_samples > 0,
+                "Sparse residency16 samples")?)
+            .sparse_residency_aliased(f(
+                request.required_device_features.sparse_residency_aliased,
+                request.enabled_device_features.sparse_residency_aliased,
+                vk_device_features.sparse_residency_aliased > 0,
+                "Sparse residency aliased")?)
+            .variable_multisample_rate(f(
+                request.required_device_features.variable_multisample_rate,
+                request.enabled_device_features.variable_multisample_rate,
+                vk_device_features.variable_multisample_rate > 0,
+                "Variable multisample rate")?)
+            .inherited_queries(f(
+                request.required_device_features.inherited_queries,
+                request.enabled_device_features.inherited_queries,
+                vk_device_features.inherited_queries > 0,
+                "Inherited queries")?);
+
+        Ok(builder.build())
     }
 
     fn get_device_info(vk_physical_device_properties: &ash::vk::PhysicalDeviceProperties) -> render::DeviceInfo {

@@ -117,9 +117,10 @@ impl System {
         match unsafe { self.vk_instance.enumerate_physical_devices() } {
             Ok(vk_physical_devices) => {
                 for vk_device in vk_physical_devices {
-                    if let Ok(device) = Device::new(&self, vk_device, request) {
-                        self.devices.push(device);
-                    }
+                    match Device::new(&self, vk_device, request) {
+                        Ok(device) => self.devices.push(device),
+                        Err(_) => log::info!("Device isn't inited. Skip."),
+                    };
                 }
             }
             Err(error) => {

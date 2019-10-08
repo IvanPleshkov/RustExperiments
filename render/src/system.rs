@@ -1,4 +1,5 @@
 use semver;
+use crate::device;
 
 pub trait System {
     // fn render_devices_count() -> usize;
@@ -10,14 +11,6 @@ pub trait SystemFabric {
     fn create(request: &SystemRequest) -> Box<dyn System>;
 }
 
-pub enum DeviceFeature {
-    TesselationShaders,
-
-    GeometryShaders,
-
-    ComputeShaders,
-}
-
 pub struct SystemRequest {
     pub api_name: String,
 
@@ -25,9 +18,9 @@ pub struct SystemRequest {
 
     pub first_unsupported_version: semver::Version,
 
-    pub required_device_features: Vec<DeviceFeature>,
+    pub required_device_features: device::Features,
 
-    pub disabled_device_features: Vec<DeviceFeature>,
+    pub enabled_device_features: device::Features,
 
     pub required_extensions: Vec<String>,
 
@@ -60,8 +53,8 @@ impl SystemRequest {
             api_name: Self::vulkan_name(),
             min_supported_version: semver::Version::parse("1.0.0").unwrap(),
             first_unsupported_version: semver::Version::parse("2.0.0").unwrap(),
-            required_device_features: vec![],
-            disabled_device_features: vec![],
+            required_device_features: device::Features::none(),
+            enabled_device_features: device::Features::all(),
             required_extensions: vec![],
             required_layers: vec![],
             profile_memory: true,
