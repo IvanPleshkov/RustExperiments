@@ -56,7 +56,6 @@ pub struct Device {
 
     pub vk_physical_device: ash::vk::PhysicalDevice,
 
-    // pub vk_device: ash::Device;
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
 
     pub vk_heaps: Vec<Heap>,

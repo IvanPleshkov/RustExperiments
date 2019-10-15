@@ -41,26 +41,20 @@ impl System {
         None
     }
 
-    fn get_vk_instance_create_info(request: &render::SystemRequest) -> vk::InstanceCreateInfo {
-        trace!("System", "get_vk_instance_create_info");
+    fn init_render_system(
+        entry: ash::Entry,
+        request: &render::SystemRequest,
+    ) -> Option<Box<dyn render::System>> {
+        trace!("System", "init_render_system");
 
+        let application_name = std::ffi::CString::new(request.application_name.clone()).unwrap();
+        let engine_name = std::ffi::CString::new(request.engine_name.clone()).unwrap();
         let app_info = vk::ApplicationInfo::builder()
-            .application_name(
-                std::ffi::CString::new(request.application_name.clone())
-                    .unwrap()
-                    .as_c_str(),
-            )
+            .application_name(application_name.as_c_str())
             .application_version(vk_utils::semver_to_vk_version(&request.application_version))
-            .engine_name(
-                std::ffi::CString::new(request.engine_name.clone())
-                    .unwrap()
-                    .as_c_str(),
-            )
+            .engine_name(engine_name.as_c_str())
             .engine_version(vk_utils::semver_to_vk_version(&request.engine_version))
-            .api_version(vk_utils::semver_to_vk_version(
-                &request.min_supported_version,
-            ))
-            .build();
+            .api_version(vk_utils::semver_to_vk_version(&request.min_supported_version));
 
         let mut extensions: Vec<std::ffi::CString> = Vec::new();
         let mut extension_ptrs: Vec<*const std::os::raw::c_char> = Vec::new();
@@ -76,20 +70,11 @@ impl System {
             layer_ptrs.push(extensions.last().unwrap().as_ptr())
         }
 
-        vk::InstanceCreateInfo::builder()
+        let create_info = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
             .enabled_extension_names(extension_ptrs.as_slice())
-            .enabled_layer_names(layer_ptrs.as_slice())
-            .build()
-    }
+            .enabled_layer_names(layer_ptrs.as_slice());
 
-    fn init_render_system(
-        entry: ash::Entry,
-        request: &render::SystemRequest,
-    ) -> Option<Box<dyn render::System>> {
-        trace!("System", "init_render_system");
-
-        let create_info = Self::get_vk_instance_create_info(request);
         let vk_allocation_callbacks = Self::get_vk_allocation_callbacks();
         match unsafe { entry.create_instance(&create_info, vk_allocation_callbacks.as_ref()) } {
             Ok(instance) => {
