@@ -94,10 +94,27 @@ impl Device {
         let heaps = Self::get_heaps(system, vk_physical_device);
         let queues = Self::get_queues(system, vk_physical_device);
 
-        let vk_queue_create_infos = Self::get_vk_create_queue_create_infos(&queues);
+        let mut queue_priorities : std::collections::HashMap<u32, Vec<f32>> = std::collections::HashMap::new();
+        for queue in &queues {
+            let key = queue.vk_queue_family_index as u32;
+            if queue_priorities.contains_key(&key) {
+                queue_priorities.get_mut(&key).unwrap().push(1.0);
+            } else {
+                queue_priorities.insert(key, vec![1.0]);
+            }
+        }
+
+        let mut vk_queue_create_infos : Vec<ash::vk::DeviceQueueCreateInfo> = Vec::new();
+        for (queue_family, priorities) in &queue_priorities {
+            vk_queue_create_infos.push(ash::vk::DeviceQueueCreateInfo::builder()
+                .queue_family_index(*queue_family)
+                .queue_priorities(priorities.as_slice())
+                .build());
+        }
+
         let vk_device_features = Self::get_vk_enabled_features(system, vk_physical_device, request)?;
         let vk_device_create_info = vk::DeviceCreateInfo::builder()
-            // .queue_create_infos(vk_queue_create_infos.as_slice())
+            .queue_create_infos(vk_queue_create_infos.as_slice())
             // .enabled_layer_names(enabled_layer_names: &'a [*const c_char])
             // .enabled_extension_names(enabled_extension_names: &'a [*const c_char])
             .enabled_features(&vk_device_features)
@@ -126,27 +143,6 @@ impl Device {
             vk_heaps: heaps,
             vk_queues: queues,
         })
-    }
-
-    fn get_vk_create_queue_create_infos(queues: &Vec<Queue>) -> Vec<ash::vk::DeviceQueueCreateInfo> {
-        let mut infos : Vec<ash::vk::DeviceQueueCreateInfo> = Vec::new();
-        for queue in queues {
-            let mut need_new_info = true;
-            for info in &mut infos {
-                if info.queue_family_index == queue.vk_queue_family_index as u32 {
-                    info.queue_count = std::cmp::max(info.queue_count, (queue.vk_queue_index + 1) as u32);
-                    need_new_info = false;
-                }
-            }
-            if need_new_info {
-                let mut info = ash::vk::DeviceQueueCreateInfo::builder()
-                    .queue_family_index(queue.vk_queue_family_index as u32)
-                    .build();
-                info.queue_count = (queue.vk_queue_index + 1) as u32;
-                infos.push(info);
-            }
-        }
-        infos
     }
 
     fn get_vk_enabled_features(
