@@ -1,6 +1,6 @@
 use crate::system::System;
 use crate::vk_utils;
-// use ash::version::DeviceV1_0;
+use ash::version::DeviceV1_0;
 // use ash::version::EntryV1_0;
 use ash::version::InstanceV1_0;
 use ash::vk;
@@ -700,6 +700,15 @@ impl Device {
 impl Drop for Device {
     fn drop(&mut self) {
         trace!("Device", "Drop");
+
+        match unsafe { self.vk_device.device_wait_idle() } {
+            Ok(_) => {},
+            Err(error) => {
+                log::error!("Error while idle device before drop. Error = {}.", error);
+            },
+        };
+
+        unsafe { self.vk_device.destroy_device(self.vk_allocation_callbacks.as_ref()) };
     }
 }
 

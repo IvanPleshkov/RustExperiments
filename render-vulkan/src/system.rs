@@ -126,6 +126,8 @@ impl Drop for System {
     fn drop(&mut self) {
         trace!("System", "Drop");
         self.devices.clear();
+
+        unsafe { self.vk_instance.destroy_instance(self.vk_allocation_callbacks.as_ref()) };
     }
 }
 
