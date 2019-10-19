@@ -1,5 +1,5 @@
-pub mod value;
 pub mod function;
+pub mod value;
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,6 @@
+use log;
 use nalgebra::Vector2;
 use nalgebra::Vector3;
-use log;
 
 pub enum DeviceType {
     Unknown,
@@ -178,7 +178,6 @@ pub struct Features {
 }
 
 pub struct DeviceInfo {
-    
     pub name: String,
 
     pub vendor: String,
@@ -191,7 +190,6 @@ pub struct DeviceInfo {
 }
 
 pub trait Device {
-
     fn device_info(&self) -> &DeviceInfo;
 
     // fn create_comamnd_buffer(&mut self) -> RenderCommandBuffer;
@@ -202,7 +200,6 @@ pub trait Device {
 }
 
 impl DeviceInfo {
-
     pub fn log(&self) {
         log::info!("Device info:");
         log::info!("Vendor: {}, Name: {}", self.vendor, self.name);

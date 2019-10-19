@@ -9,7 +9,6 @@ use render;
 //use ash::version::DeviceV1_0;
 
 pub struct System {
-
     pub vk_instance: ash::Instance,
 
     pub vk_allocation_callbacks: Option<vk::AllocationCallbacks>,
@@ -21,7 +20,8 @@ impl System {
     pub fn new(request: &render::SystemRequest) -> Option<Box<dyn render::System>> {
         trace!("System", "new");
 
-        if request.api_name != render::SystemRequest::vulkan_name() || request.first_unsupported_version.major < 2
+        if request.api_name != render::SystemRequest::vulkan_name()
+            || request.first_unsupported_version.major < 2
         {
             return None;
         }
@@ -54,7 +54,9 @@ impl System {
             .application_version(vk_utils::semver_to_vk_version(&request.application_version))
             .engine_name(engine_name.as_c_str())
             .engine_version(vk_utils::semver_to_vk_version(&request.engine_version))
-            .api_version(vk_utils::semver_to_vk_version(&request.min_supported_version));
+            .api_version(vk_utils::semver_to_vk_version(
+                &request.min_supported_version,
+            ));
 
         let mut extensions: Vec<std::ffi::CString> = Vec::new();
         let mut extension_ptrs: Vec<*const std::os::raw::c_char> = Vec::new();
@@ -127,12 +129,14 @@ impl Drop for System {
         trace!("System", "Drop");
         self.devices.clear();
 
-        unsafe { self.vk_instance.destroy_instance(self.vk_allocation_callbacks.as_ref()) };
+        unsafe {
+            self.vk_instance
+                .destroy_instance(self.vk_allocation_callbacks.as_ref())
+        };
     }
 }
 
 impl render::System for System {
-
     fn get_devices_count(&self) -> usize {
         self.devices.len()
     }

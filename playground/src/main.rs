@@ -1,5 +1,5 @@
-use std::any::Any;
 use nalgebra::Vector3;
+use std::any::Any;
 use std::fmt::Display;
 
 fn main() {

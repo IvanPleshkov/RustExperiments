@@ -1,9 +1,8 @@
-use semver;
 use crate::device::Device;
 use crate::device::Features;
+use semver;
 
 pub trait System {
-
     fn get_devices_count(&self) -> usize;
 
     fn get_device(&self, index: usize) -> &dyn Device;
@@ -16,12 +15,10 @@ pub trait System {
 }
 
 pub trait SystemFabric {
-
     fn create(request: &SystemRequest) -> Box<dyn System>;
 }
 
 pub struct SystemRequest {
-
     pub api_name: String,
 
     pub min_supported_version: semver::Version,
@@ -58,7 +55,6 @@ pub struct SystemRequest {
 }
 
 impl SystemRequest {
-
     pub fn request_vulkan_debug() -> SystemRequest {
         SystemRequest {
             api_name: Self::vulkan_name(),

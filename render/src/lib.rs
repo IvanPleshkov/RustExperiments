@@ -1,12 +1,12 @@
-mod device;
-mod system;
-mod resource;
 mod buffer;
+mod device;
+mod resource;
+mod system;
 
-pub use self::device::*;
-pub use self::system::*;
-pub use self::resource::*;
 pub use self::buffer::*;
+pub use self::device::*;
+pub use self::resource::*;
+pub use self::system::*;
 
 #[cfg(test)]
 mod tests {

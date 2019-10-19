@@ -1,10 +1,7 @@
 use crate::function;
 
-pub struct ExecutionEnvironment {
-
-}
+pub struct ExecutionEnvironment {}
 
 pub trait Instruction {
-
-    fn execute(env: &mut ExecutionEnvironment, );
+    fn execute(env: &mut ExecutionEnvironment);
 }

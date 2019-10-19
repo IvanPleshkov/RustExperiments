@@ -5,8 +5,8 @@ pub mod mesh;
 #[macro_use]
 pub mod init_logger;
 
-pub use self::trace::*;
 pub use self::init_logger::*;
+pub use self::trace::*;
 
 pub use f64 as real;
 
