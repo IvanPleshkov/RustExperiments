@@ -9,6 +9,7 @@ use common::trace::*;
 use nalgebra::Vector2;
 use nalgebra::Vector3;
 use render;
+use std::sync::Arc;
 
 pub struct Heap {
     pub index: usize,
@@ -908,11 +909,11 @@ impl render::Device for Device {
         &self.info
     }
 
-    fn create_gpu_buffer(&mut self, info: render::GpuBufferInfo) -> render::GpuBuffer {
+    fn create_gpu_buffer(&mut self, info: render::GpuBufferInfo) -> Arc<render::GpuBuffer> {
         std::unimplemented!()
     }
 
-    fn create_gpu_texture(&mut self, info: render::GpuTextureInfo) -> render::GpuTexture {
+    fn create_gpu_texture(&mut self, info: render::GpuTextureInfo) -> Arc<render::GpuTexture> {
         std::unimplemented!()
     }
 

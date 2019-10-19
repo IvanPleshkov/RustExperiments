@@ -4,6 +4,4 @@ pub struct GpuTexture {
     pub gpu_resource: GpuResource,
 }
 
-pub struct GpuTextureInfo {
-    
-}
+pub struct GpuTextureInfo {}
