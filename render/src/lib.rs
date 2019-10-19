@@ -1,11 +1,13 @@
-mod buffer;
+mod gpu_buffer;
 mod device;
-mod resource;
+mod gpu_resource;
+mod gpu_texture;
 mod system;
 
-pub use self::buffer::*;
+pub use self::gpu_buffer::*;
 pub use self::device::*;
-pub use self::resource::*;
+pub use self::gpu_resource::*;
+pub use self::gpu_texture::*;
 pub use self::system::*;
 
 #[cfg(test)]

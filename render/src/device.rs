@@ -1,6 +1,10 @@
 use log;
 use nalgebra::Vector2;
 use nalgebra::Vector3;
+use crate::gpu_buffer::GpuBuffer;
+use crate::gpu_buffer::GpuBufferInfo;
+use crate::gpu_texture::GpuTexture;
+use crate::gpu_texture::GpuTextureInfo;
 
 pub enum DeviceType {
     Unknown,
@@ -191,6 +195,14 @@ pub struct DeviceInfo {
 
 pub trait Device {
     fn device_info(&self) -> &DeviceInfo;
+
+    fn create_gpu_buffer(&mut self, info: GpuBufferInfo) -> GpuBuffer;
+
+    fn create_gpu_texture(&mut self, info: GpuTextureInfo) -> GpuTexture;
+
+    fn collect_garbage(&mut self);
+
+    // fn create_gpu_texture() -> GpuTexture;
 
     // fn create_comamnd_buffer(&mut self) -> RenderCommandBuffer;
 

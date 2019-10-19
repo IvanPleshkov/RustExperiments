@@ -907,4 +907,16 @@ impl render::Device for Device {
     fn device_info(&self) -> &render::DeviceInfo {
         &self.info
     }
+
+    fn create_gpu_buffer(&mut self, info: render::GpuBufferInfo) -> render::GpuBuffer {
+        std::unimplemented!()
+    }
+
+    fn create_gpu_texture(&mut self, info: render::GpuTextureInfo) -> render::GpuTexture {
+        std::unimplemented!()
+    }
+
+    fn collect_garbage(&mut self) {
+        std::unimplemented!()
+    }
 }
