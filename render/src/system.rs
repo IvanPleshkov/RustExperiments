@@ -1,26 +1,36 @@
 use semver;
-use crate::device;
+use crate::device::Device;
+use crate::device::Features;
 
 pub trait System {
-    // fn render_devices_count() -> usize;
 
-    // fn get_render_device(&self) -> &Box<RenderDevice>;
+    fn get_devices_count(&self) -> usize;
+
+    fn get_device(&self, index: usize) -> &dyn Device;
+
+    fn get_main_device(&self) -> &dyn Device;
+
+    fn get_device_mut(&mut self, index: usize) -> &mut dyn Device;
+
+    fn get_main_device_mut(&mut self) -> &mut dyn Device;
 }
 
 pub trait SystemFabric {
+
     fn create(request: &SystemRequest) -> Box<dyn System>;
 }
 
 pub struct SystemRequest {
+
     pub api_name: String,
 
     pub min_supported_version: semver::Version,
 
     pub first_unsupported_version: semver::Version,
 
-    pub required_device_features: device::Features,
+    pub required_device_features: Features,
 
-    pub enabled_device_features: device::Features,
+    pub enabled_device_features: Features,
 
     pub required_extensions: Vec<String>,
 
@@ -48,13 +58,14 @@ pub struct SystemRequest {
 }
 
 impl SystemRequest {
+
     pub fn request_vulkan_debug() -> SystemRequest {
         SystemRequest {
             api_name: Self::vulkan_name(),
             min_supported_version: semver::Version::parse("1.0.0").unwrap(),
             first_unsupported_version: semver::Version::parse("2.0.0").unwrap(),
-            required_device_features: device::Features::none(),
-            enabled_device_features: device::Features::all(),
+            required_device_features: Features::none(),
+            enabled_device_features: Features::all(),
             required_extensions: vec![],
             required_layers: vec![],
             profile_memory: true,

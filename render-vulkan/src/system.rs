@@ -131,7 +131,28 @@ impl Drop for System {
     }
 }
 
-impl render::System for System {}
+impl render::System for System {
+
+    fn get_devices_count(&self) -> usize {
+        self.devices.len()
+    }
+
+    fn get_device(&self, index: usize) -> &dyn render::Device {
+        self.devices.get(index).unwrap()
+    }
+
+    fn get_main_device(&self) -> &dyn render::Device {
+        self.get_device(0)
+    }
+
+    fn get_device_mut(&mut self, index: usize) -> &mut dyn render::Device {
+        self.devices.get_mut(index).unwrap()
+    }
+
+    fn get_main_device_mut(&mut self) -> &mut dyn render::Device {
+        self.get_device_mut(0)
+    }
+}
 
 #[cfg(test)]
 mod tests {
