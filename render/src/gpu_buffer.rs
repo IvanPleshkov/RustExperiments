@@ -1,9 +1,8 @@
-use crate::gpu_resource::GpuResource;
 
 pub struct GpuBuffer {
-    pub gpu_resource: GpuResource,
+    pub handle: u64,
 
-    pub gpu_view: GpuResource,
+    pub view_handle: u64,
 
     pub info: GpuBufferInfo,
 }
@@ -25,6 +24,12 @@ pub struct GpuBufferInfoBuilder {
     pub info: GpuBufferInfo,
 }
 
+impl GpuBuffer {
+    pub fn is_valid(&self) -> bool {
+        self.handle != 0 && self.view_handle != 0
+    }
+}
+
 impl GpuBufferInfo {
     pub fn default() -> GpuBufferInfo {
         GpuBufferInfo {
@@ -44,5 +49,20 @@ impl GpuBufferInfoBuilder {
 
     pub fn build(self) -> GpuBufferInfo {
         self.info
+    }
+
+    pub fn name<'a>(&'a mut self, name: String) -> &'a mut Self {
+        self.info.name = name;
+        self
+    }
+
+    pub fn size<'a>(&'a mut self, size: u64) -> &'a mut Self {
+        self.info.size = size;
+        self
+    }
+
+    pub fn buffer_type<'a>(&'a mut self, buffer_type: GpuBufferType) -> &'a mut Self {
+        self.info.buffer_type = buffer_type;
+        self
     }
 }

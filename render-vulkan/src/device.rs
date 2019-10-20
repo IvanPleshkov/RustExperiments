@@ -4,6 +4,7 @@ use ash::version::DeviceV1_0;
 // use ash::version::EntryV1_0;
 use ash::version::InstanceV1_0;
 use ash::vk;
+use ash::vk::Handle;
 use common::trace;
 use common::trace::*;
 use nalgebra::Vector2;
@@ -59,6 +60,12 @@ pub struct Device {
     pub vk_heaps: Vec<Heap>,
 
     pub vk_queues: Vec<Queue>,
+
+    pub vk_queue_family_indices: Vec<u32>,
+
+    pub buffers: Vec<Arc<render::GpuBuffer>>,
+
+    pub textures: Vec<Arc<render::GpuTexture>>,
 }
 
 impl Device {
@@ -95,6 +102,7 @@ impl Device {
 
         let heaps = Self::get_heaps(system, vk_physical_device);
         let queues = Self::get_queues(system, vk_physical_device);
+        let mut vk_queue_family_indices : Vec<u32> = Vec::new();
 
         let mut queue_priorities: std::collections::HashMap<u32, Vec<f32>> =
             std::collections::HashMap::new();
@@ -104,8 +112,10 @@ impl Device {
                 queue_priorities.get_mut(&key).unwrap().push(1.0);
             } else {
                 queue_priorities.insert(key, vec![1.0]);
+                vk_queue_family_indices.push(key);
             }
         }
+        vk_queue_family_indices.sort();
 
         let mut vk_queue_create_infos: Vec<ash::vk::DeviceQueueCreateInfo> = Vec::new();
         for (queue_family, priorities) in &queue_priorities {
@@ -150,6 +160,9 @@ impl Device {
             vk_allocation_callbacks: system.vk_allocation_callbacks,
             vk_heaps: heaps,
             vk_queues: queues,
+            vk_queue_family_indices: vk_queue_family_indices,
+            buffers: Vec::new(),
+            textures: Vec::new(),
         })
     }
 
@@ -891,10 +904,10 @@ impl Drop for Device {
         trace!("Device", "Drop");
 
         match unsafe { self.vk_device.device_wait_idle() } {
-            Ok(_) => {}
+            Ok(_) => {},
             Err(error) => {
                 log::error!("Error while idle device before drop. Error = {}.", error);
-            }
+            },
         };
 
         unsafe {
@@ -910,14 +923,62 @@ impl render::Device for Device {
     }
 
     fn create_gpu_buffer(&mut self, info: render::GpuBufferInfo) -> Arc<render::GpuBuffer> {
-        std::unimplemented!()
+        trace!("Device", "create_gpu_buffer");
+        
+        let mut usage_flags = ash::vk::BufferUsageFlags::empty();
+        match info.buffer_type {
+            render::GpuBufferType::Index => {
+                usage_flags |= ash::vk::BufferUsageFlags::TRANSFER_SRC;
+                usage_flags |= ash::vk::BufferUsageFlags::TRANSFER_DST;
+                usage_flags |= ash::vk::BufferUsageFlags::UNIFORM_BUFFER;
+                usage_flags |= ash::vk::BufferUsageFlags::STORAGE_BUFFER;
+                usage_flags |= ash::vk::BufferUsageFlags::INDEX_BUFFER;
+            },
+            render::GpuBufferType::Vertex => {
+                usage_flags |= ash::vk::BufferUsageFlags::TRANSFER_SRC;
+                usage_flags |= ash::vk::BufferUsageFlags::TRANSFER_DST;
+                usage_flags |= ash::vk::BufferUsageFlags::UNIFORM_BUFFER;
+                usage_flags |= ash::vk::BufferUsageFlags::STORAGE_BUFFER;
+                usage_flags |= ash::vk::BufferUsageFlags::VERTEX_BUFFER;
+            },
+        };
+
+        let buffer_create_info = ash::vk::BufferCreateInfo::builder()
+            .usage(usage_flags)
+            .sharing_mode(ash::vk::SharingMode::CONCURRENT)
+            .queue_family_indices(self.vk_queue_family_indices.as_slice())
+            .size(info.size);
+
+        let handle = match unsafe{ self.vk_device.create_buffer(&buffer_create_info, self.vk_allocation_callbacks.as_ref()) } {
+            Ok(vk_buffer) => {
+                vk_buffer.as_raw()
+            },
+            Err(error) => {
+                log::error!("Create gpu buffer error. Error = {}.", error);
+                0
+            },
+        };
+
+        let view_handle : u64 = 0;
+
+        let gpu_buffer = render::GpuBuffer {
+            handle: handle,
+            view_handle: view_handle,
+            info: info,
+        };
+
+        Arc::new(gpu_buffer)
     }
 
     fn create_gpu_texture(&mut self, info: render::GpuTextureInfo) -> Arc<render::GpuTexture> {
+        trace!("Device", "create_gpu_texture");
+
         std::unimplemented!()
     }
 
     fn collect_garbage(&mut self) {
+        trace!("Device", "collect_garbage");
+
         std::unimplemented!()
     }
 }
