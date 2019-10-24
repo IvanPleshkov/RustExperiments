@@ -1,4 +1,3 @@
-
 pub struct GpuBuffer {
     pub handle: u64,
 
@@ -38,15 +37,15 @@ impl GpuBufferInfo {
             buffer_type: GpuBufferType::Vertex,
         }
     }
-}
 
-impl GpuBufferInfoBuilder {
-    pub fn new() -> GpuBufferInfoBuilder {
+    pub fn builder() -> GpuBufferInfoBuilder {
         GpuBufferInfoBuilder {
             info: GpuBufferInfo::default(),
         }
     }
+}
 
+impl GpuBufferInfoBuilder {
     pub fn build(self) -> GpuBufferInfo {
         self.info
     }

@@ -102,7 +102,7 @@ impl Device {
 
         let heaps = Self::get_heaps(system, vk_physical_device);
         let queues = Self::get_queues(system, vk_physical_device);
-        let mut vk_queue_family_indices : Vec<u32> = Vec::new();
+        let mut vk_queue_family_indices: Vec<u32> = Vec::new();
 
         let mut queue_priorities: std::collections::HashMap<u32, Vec<f32>> =
             std::collections::HashMap::new();
@@ -897,18 +897,44 @@ impl Device {
         }
         queues
     }
+
+    pub fn delete_buffer(&mut self, buffer: &Arc<render::GpuBuffer>) {
+        trace!("Device", "delete_buffer");
+        // log::debug!("Delete buffer {}", buffer.name);
+    }
+
+    pub fn delete_texture(&mut self, texture: &Arc<render::GpuTexture>) {
+        trace!("Device", "delete_texture");
+        // log::debug!("Delete texture {}", texture.name);
+    }
 }
 
 impl Drop for Device {
     fn drop(&mut self) {
-        trace!("Device", "Drop");
+        trace!("Device", "drop");
 
         match unsafe { self.vk_device.device_wait_idle() } {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(error) => {
                 log::error!("Error while idle device before drop. Error = {}.", error);
-            },
+            }
         };
+
+        let buffers = self.buffers.clone();
+        for buffer in &buffers {
+            //if !buffer.is_unique() {
+            //    log::error!("Buffer {} is still used", buffer.name);
+            //}
+            self.delete_buffer(buffer);
+        }
+
+        let textures = self.textures.clone();
+        for texture in &textures {
+            //if !buffer.is_unique() {
+            //    log::error!("Buffer {} is still used", buffer.name);
+            //}
+            self.delete_texture(texture);
+        }
 
         unsafe {
             self.vk_device
@@ -924,7 +950,7 @@ impl render::Device for Device {
 
     fn create_gpu_buffer(&mut self, info: render::GpuBufferInfo) -> Arc<render::GpuBuffer> {
         trace!("Device", "create_gpu_buffer");
-        
+
         let mut usage_flags = ash::vk::BufferUsageFlags::empty();
         match info.buffer_type {
             render::GpuBufferType::Index => {
@@ -933,14 +959,14 @@ impl render::Device for Device {
                 usage_flags |= ash::vk::BufferUsageFlags::UNIFORM_BUFFER;
                 usage_flags |= ash::vk::BufferUsageFlags::STORAGE_BUFFER;
                 usage_flags |= ash::vk::BufferUsageFlags::INDEX_BUFFER;
-            },
+            }
             render::GpuBufferType::Vertex => {
                 usage_flags |= ash::vk::BufferUsageFlags::TRANSFER_SRC;
                 usage_flags |= ash::vk::BufferUsageFlags::TRANSFER_DST;
                 usage_flags |= ash::vk::BufferUsageFlags::UNIFORM_BUFFER;
                 usage_flags |= ash::vk::BufferUsageFlags::STORAGE_BUFFER;
                 usage_flags |= ash::vk::BufferUsageFlags::VERTEX_BUFFER;
-            },
+            }
         };
 
         let buffer_create_info = ash::vk::BufferCreateInfo::builder()
@@ -949,17 +975,18 @@ impl render::Device for Device {
             .queue_family_indices(self.vk_queue_family_indices.as_slice())
             .size(info.size);
 
-        let handle = match unsafe{ self.vk_device.create_buffer(&buffer_create_info, self.vk_allocation_callbacks.as_ref()) } {
-            Ok(vk_buffer) => {
-                vk_buffer.as_raw()
-            },
+        let handle = match unsafe {
+            self.vk_device
+                .create_buffer(&buffer_create_info, self.vk_allocation_callbacks.as_ref())
+        } {
+            Ok(vk_buffer) => vk_buffer.as_raw(),
             Err(error) => {
                 log::error!("Create gpu buffer error. Error = {}.", error);
                 0
-            },
+            }
         };
 
-        let view_handle : u64 = 0;
+        let view_handle: u64 = 0;
 
         let gpu_buffer = render::GpuBuffer {
             handle: handle,
