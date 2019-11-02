@@ -1,10 +1,14 @@
 use crate::function::Exception;
 use crate::function::Function;
 use crate::variable::Variable;
+use crate::functions_library::FunctionsLibrary;
 use common::trace;
 use common::trace::*;
+use std::sync::Arc;
 
-pub struct Vm {}
+pub struct Vm {
+    pub functions_factory: Arc<FunctionsLibrary>,
+}
 
 impl Vm {
     pub fn run(
