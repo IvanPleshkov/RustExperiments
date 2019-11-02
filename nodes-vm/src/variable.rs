@@ -9,8 +9,8 @@ pub enum Variable {
     String(String),
     Boolean(bool),
     Vector(Vec<Variable>),
-    Function(Rc<dyn Function>),
     Object(HashMap<String, Variable>),
+    Function(Rc<dyn Function>),
 }
 
 impl std::default::Default for Variable {

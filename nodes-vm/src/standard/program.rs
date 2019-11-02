@@ -272,15 +272,13 @@ impl Function for Program {
             instructions_json.push(Value::Object(map));
         }
 
-        let mut map : Map<String, Value> = Map::new();
-        map.insert(String::from("version"), to_value(format!("{}", self.version())).unwrap());
+        let mut result = self.serialize_common_function_data();
+        let map = result.as_object_mut().unwrap();
         map.insert(String::from("instructions"), Value::Array(instructions_json));
-        map.insert(String::from("name"), to_value(self.name()).unwrap());
-        map.insert(String::from("library"), to_value(self.library_name()).unwrap());
         map.insert(String::from("inputs_len"), to_value(self.inputs_len).unwrap());
         map.insert(String::from("outputs_len"), to_value(self.outputs_len).unwrap());
         map.insert(String::from("registry_size"), to_value(self.registry_size).unwrap());
-        serde_json::Value::Object(map)
+        result
     }
 
     fn deserialize(&mut self, vm: &Vm, json: &serde_json::Value) -> Result<(), ()> {

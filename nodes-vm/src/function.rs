@@ -28,4 +28,13 @@ pub trait Function {
     fn serialize(&self) -> serde_json::Value;
 
     fn deserialize(&mut self, vm: &Vm, json: &serde_json::Value) -> Result<(), ()>;
+
+    fn serialize_common_function_data(&self) -> serde_json::Value {
+        use serde_json::*;
+        let mut map : Map<String, Value> = Map::new();
+        map.insert(String::from("version"), to_value(format!("{}", self.version())).unwrap());
+        map.insert(String::from("name"), to_value(self.name()).unwrap());
+        map.insert(String::from("library"), to_value(self.library_name()).unwrap());
+        serde_json::Value::Object(map)
+    }
 }
