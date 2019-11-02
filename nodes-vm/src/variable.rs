@@ -12,3 +12,9 @@ pub enum Variable {
     Function(Rc<dyn Function>),
     Object(HashMap<String, Variable>),
 }
+
+impl std::default::Default for Variable {
+    fn default() -> Self {
+        Variable::Null
+    }
+}

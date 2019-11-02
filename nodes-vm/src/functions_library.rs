@@ -1,5 +1,6 @@
 use crate::function::Function;
 use std::rc::Rc;
+use semver;
 
 pub trait FunctionFactory {
     fn create(&self) -> Rc<dyn Function>;
@@ -7,6 +8,8 @@ pub trait FunctionFactory {
     fn namespace(&self) -> String;
 
     fn function_name(&self) -> String;
+
+    fn version(&self) -> semver::Version;
 }
 
 pub struct FunctionsLibrary {
