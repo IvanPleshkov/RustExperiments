@@ -1,6 +1,6 @@
 use crate::function::Function;
-use std::rc::Rc;
 use semver;
+use std::rc::Rc;
 
 pub trait FunctionFactory {
     fn create(&self) -> Rc<dyn Function>;
@@ -23,7 +23,11 @@ impl FunctionsLibrary {
         }
     }
 
-    pub fn create_function(&self, namespace: &str, function_name: &str) -> Option<Rc<dyn Function>> {
+    pub fn create_function(
+        &self,
+        namespace: &str,
+        function_name: &str,
+    ) -> Option<Rc<dyn Function>> {
         for factory in &self.factories {
             if factory.namespace() == namespace && factory.function_name() == function_name {
                 return Some(factory.create());

@@ -6,8 +6,7 @@ pub struct Exception {
     pub message: String,
 }
 
-pub trait Function
-{
+pub trait Function {
     fn run(
         &self,
         vm: &mut Vm,

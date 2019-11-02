@@ -1,10 +1,10 @@
-use crate::function::Function;
 use crate::function::Exception;
+use crate::function::Function;
 use crate::functions_library::FunctionFactory;
-use crate::vm::Vm;
 use crate::variable::Variable;
-use std::rc::Rc;
+use crate::vm::Vm;
 use semver;
+use std::rc::Rc;
 
 pub enum Instruction {
     Copy(usize, usize),
@@ -23,12 +23,11 @@ struct Program {
     pub instructions: Vec<Instruction>,
 }
 
-struct ProgramFactory {
-}
+struct ProgramFactory {}
 
 impl FunctionFactory for ProgramFactory {
     fn create(&self) -> Rc<dyn Function> {
-        Rc::new(Program{ 
+        Rc::new(Program {
             name: String::new(),
             registry_size: 0,
             inputs_len: 0,
@@ -63,11 +62,10 @@ impl Function for Program {
         inputs: &mut [Variable],
         outputs: &mut [Variable],
     ) -> Result<(), Exception> {
-
-        let mut registry : Vec<Variable> = Vec::new();
+        let mut registry: Vec<Variable> = Vec::new();
         registry.resize_with(self.registry_size as usize, || Variable::Null);
 
-        let mut cursor_position : usize = 0;
+        let mut cursor_position: usize = 0;
         while cursor_position < self.instructions.len() {
             match &self.instructions[cursor_position] {
                 Instruction::Copy(from_index, to_index) => {
@@ -78,7 +76,7 @@ impl Function for Program {
                     }
                     registry[*to_index] = registry[*from_index].clone();
                     cursor_position += 1;
-                },
+                }
                 Instruction::MoveFromInput(input_index, registry_index) => {
                     if *input_index >= inputs.len() || *registry_index >= registry.len() {
                         return Err(Exception {
@@ -87,7 +85,7 @@ impl Function for Program {
                     }
                     registry[*registry_index] = inputs[*input_index].clone();
                     cursor_position += 1;
-                },
+                }
                 Instruction::MoveToOutput(registry_index, output_index) => {
                     if *output_index >= outputs.len() || *registry_index >= registry.len() {
                         return Err(Exception {
@@ -96,7 +94,7 @@ impl Function for Program {
                     }
                     outputs[*output_index] = registry[*registry_index].clone();
                     cursor_position += 1;
-                },
+                }
                 Instruction::JumpIf(registry_index, true_position, false_position) => {
                     if *registry_index >= registry.len() {
                         return Err(Exception {
@@ -110,17 +108,17 @@ impl Function for Program {
                             } else {
                                 cursor_position = *false_position;
                             }
-                        },
+                        }
                         _ => {
                             return Err(Exception {
                                 message: String::from("Instruction::JumpIf: value is not bool"),
                             });
                         }
                     };
-                },
+                }
                 Instruction::Jump(position) => {
                     cursor_position = *position;
-                },
+                }
                 Instruction::Invoke(function, inputs_start, outputs_start) => {
                     if *inputs_start >= registry.len() || *outputs_start >= registry.len() {
                         return Err(Exception {
@@ -128,12 +126,12 @@ impl Function for Program {
                         });
                     }
 
-                    let mut input : Vec<Variable> = Vec::new();
+                    let mut input: Vec<Variable> = Vec::new();
                     for i in 0..function.inputs_len() {
                         input.push(registry[inputs_start + i].clone());
                     }
 
-                    let mut output : Vec<Variable> = Vec::new();
+                    let mut output: Vec<Variable> = Vec::new();
                     output.resize_with(function.outputs_len(), || Variable::Null);
                     function.run(vm, input.as_mut_slice(), output.as_mut_slice())?;
 
@@ -141,9 +139,9 @@ impl Function for Program {
                         outputs[outputs_start + i] = outputs[i].clone();
                     }
                     cursor_position += 1;
-                },
+                }
             };
-        };
+        }
 
         Ok(())
     }
