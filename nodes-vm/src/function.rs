@@ -11,8 +11,8 @@ pub trait Function {
     fn run(
         &self,
         vm: &mut Vm,
-        inputs: &mut [Variable],
-        outputs: &mut [Variable],
+        inputs: &mut [&mut Variable],
+        outputs: &mut [&mut Variable],
     ) -> Result<(), Exception>;
 
     fn name(&self) -> String;

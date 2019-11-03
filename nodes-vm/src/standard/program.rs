@@ -123,8 +123,8 @@ impl Function for Program {
     fn run(
         &self,
         vm: &mut Vm,
-        inputs: &mut [Variable],
-        outputs: &mut [Variable],
+        inputs: &mut [&mut Variable],
+        outputs: &mut [&mut Variable],
     ) -> Result<(), Exception> {
         let mut registry: Vec<Variable> = Vec::new();
         registry.resize_with(self.registry_size as usize, || Variable::Null);
@@ -156,7 +156,7 @@ impl Function for Program {
                             message: String::from("Wrong program in Instruction::MoveToOutput"),
                         });
                     }
-                    outputs[*output_index] = registry[*registry_index].clone();
+                    *outputs[*output_index] = registry[*registry_index].clone();
                     cursor_position += 1;
                 }
                 Instruction::JumpIf(registry_index, true_position, false_position) => {
@@ -184,7 +184,7 @@ impl Function for Program {
                     cursor_position = *position;
                 }
                 Instruction::Invoke(function, inputs_start, outputs_start) => {
-                    if *inputs_start >= registry.len() || *outputs_start >= registry.len() {
+                    if *inputs_start + function.inputs_len() >= registry.len() || *outputs_start + function.outputs_len() >= registry.len() {
                         return Err(Exception {
                             message: String::from("Wrong program in Instruction::Invoke"),
                         });
@@ -197,10 +197,13 @@ impl Function for Program {
 
                     let mut output: Vec<Variable> = Vec::new();
                     output.resize_with(function.outputs_len(), || Variable::Null);
-                    function.run(vm, input.as_mut_slice(), output.as_mut_slice())?;
+                    function.run(
+                        vm,
+                        input.iter_mut().collect::<Vec<_>>().as_mut_slice(),
+                        output.iter_mut().collect::<Vec<_>>().as_mut_slice())?;
 
                     for i in 0..function.outputs_len() {
-                        outputs[outputs_start + i] = outputs[i].clone();
+                        registry[outputs_start + i] = output[i].clone();
                     }
                     cursor_position += 1;
                 }

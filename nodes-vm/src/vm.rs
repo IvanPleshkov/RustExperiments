@@ -24,7 +24,7 @@ impl Vm {
         }
         let mut result: Vec<Variable> = Vec::new();
         result.resize_with(function.outputs_len(), || Variable::Null);
-        function.run(self, inputs_copy.as_mut_slice(), result.as_mut_slice())?;
+        function.run(self, inputs_copy.iter_mut().collect::<Vec<_>>().as_mut_slice(), result.iter_mut().collect::<Vec<_>>().as_mut_slice())?;
         Ok(result)
     }
 }
