@@ -12,7 +12,7 @@ pub enum Instruction {
     MoveToOutput(usize, usize),
     JumpIf(usize, usize, usize),
     Jump(usize),
-    Invoke(Rc<dyn Function>, usize, usize),
+    Invoke(Rc<dyn Function>, Vec<usize>, Vec<usize>),
 }
 
 pub struct Program {
@@ -65,11 +65,19 @@ impl Program {
                 let position = instruction_json.get("position")?.as_u64()? as usize;
                 Instruction::Jump(position)
             } else if instruction_type == "invoke" {
-                let inputs_start = instruction_json.get("inputs_start")?.as_u64()? as usize;
-                let outputs_start = instruction_json.get("outputs_start")?.as_u64()? as usize;
+                let mut input_indexes : Vec<usize> = Vec::new();
+                for index_json in instruction_json.get("input_indexes")?.as_array()? {
+                    input_indexes.push(index_json.as_u64()? as usize);
+                }
+
+                let mut output_indexes : Vec<usize> = Vec::new();
+                for index_json in instruction_json.get("output_indexes")?.as_array()? {
+                    output_indexes.push(index_json.as_u64()? as usize);
+                }
+
                 let function_json = instruction_json.get("function_data")?;
                 let function = vm.functions_factory.deserialize_function(vm, function_json)?;
-                Instruction::Invoke(function, inputs_start, outputs_start)
+                Instruction::Invoke(function, input_indexes, output_indexes)
             } else {
                 return None;
             };
@@ -183,16 +191,11 @@ impl Function for Program {
                 Instruction::Jump(position) => {
                     cursor_position = *position;
                 }
-                Instruction::Invoke(function, inputs_start, outputs_start) => {
-                    if *inputs_start + function.inputs_len() >= registry.len() || *outputs_start + function.outputs_len() >= registry.len() {
-                        return Err(Exception {
-                            message: String::from("Wrong program in Instruction::Invoke"),
-                        });
-                    }
-
+                Instruction::Invoke(function, input_indexes, output_indexes) => {
                     let mut input: Vec<Variable> = Vec::new();
-                    for i in 0..function.inputs_len() {
-                        input.push(registry[inputs_start + i].clone());
+                    for i in 0..input_indexes.len() {
+                        let registry_index = input_indexes[i];
+                        input.push(registry[registry_index].clone());
                     }
 
                     let mut output: Vec<Variable> = Vec::new();
@@ -202,8 +205,9 @@ impl Function for Program {
                         input.iter_mut().collect::<Vec<_>>().as_mut_slice(),
                         output.iter_mut().collect::<Vec<_>>().as_mut_slice())?;
 
-                    for i in 0..function.outputs_len() {
-                        registry[outputs_start + i] = output[i].clone();
+                    for i in 0..output_indexes.len() {
+                        let registry_index = output_indexes[i];
+                        registry[registry_index] = output[i].clone();
                     }
                     cursor_position += 1;
                 }
@@ -265,11 +269,15 @@ impl Function for Program {
                     map.insert(String::from("type"), Value::String(String::from("jump")));
                     map.insert(String::from("position"), to_value(position).unwrap());
                 },
-                Instruction::Invoke(function, inputs_start, outputs_start) => {
+                Instruction::Invoke(function, input_indexes, output_indexes) => {
                     map.insert(String::from("type"), Value::String(String::from("invoke")));
-                    map.insert(String::from("inputs_start"), to_value(inputs_start).unwrap());
-                    map.insert(String::from("outputs_start"), to_value(outputs_start).unwrap());
                     map.insert(String::from("function_data"), function.serialize());
+
+                    let inputs_json : Vec<_> = input_indexes.into_iter().map(|x| to_value(*x).unwrap()).collect();
+                    map.insert(String::from("input_indexes"), Value::Array(inputs_json));
+
+                    let outputs_json : Vec<_> = output_indexes.into_iter().map(|x| to_value(*x).unwrap()).collect();
+                    map.insert(String::from("output_indexes"), Value::Array(outputs_json));
                 },
             };
             instructions_json.push(Value::Object(map));
