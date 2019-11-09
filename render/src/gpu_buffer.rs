@@ -6,17 +6,17 @@ pub struct GpuBuffer {
     pub info: GpuBufferInfo,
 }
 
-pub enum GpuBufferType {
-    Index,
-    Vertex,
-}
-
 pub struct GpuBufferInfo {
     pub name: String,
 
     pub size: u64,
 
     pub buffer_type: GpuBufferType,
+}
+
+pub enum GpuBufferType {
+    Index,
+    Vertex,
 }
 
 pub struct GpuBufferInfoBuilder {

@@ -197,17 +197,17 @@ pub struct DeviceInfo {
 pub trait Device {
     fn device_info(&self) -> &DeviceInfo;
 
-    fn create_gpu_buffer(&mut self, info: GpuBufferInfo) -> Arc<GpuBuffer>;
+    fn create_buffer(&mut self, info: GpuBufferInfo) -> Arc<GpuBuffer>;
 
-    fn create_gpu_texture(&mut self, info: GpuTextureInfo) -> Arc<GpuTexture>;
+    fn create_texture(&mut self, info: GpuTextureInfo) -> Arc<GpuTexture>;
 
-    fn collect_garbage(&mut self);
+    // fn add_material_library(&mut self, material: serde::json) -> Arc<MaterialLibrary>;
+
+    // fn get_material(&self, material_name) -> Option<Arc<Material>>
 
     // fn create_comamnd_buffer(&mut self) -> RenderCommandBuffer;
 
-    // fn submit_command_buffer(&mut self);
-
-    // fn render_device_features(&self) -> &RenderDeviceFeatures;
+    // fn submit_command_buffer(&mut self, renderCommandBuffer: RenderCommandBuffer);
 }
 
 impl DeviceInfo {

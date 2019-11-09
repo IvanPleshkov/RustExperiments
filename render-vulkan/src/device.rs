@@ -948,7 +948,7 @@ impl render::Device for Device {
         &self.info
     }
 
-    fn create_gpu_buffer(&mut self, info: render::GpuBufferInfo) -> Arc<render::GpuBuffer> {
+    fn create_buffer(&mut self, info: render::GpuBufferInfo) -> Arc<render::GpuBuffer> {
         trace!("Device", "create_gpu_buffer");
 
         let mut usage_flags = ash::vk::BufferUsageFlags::empty();
@@ -997,14 +997,8 @@ impl render::Device for Device {
         Arc::new(gpu_buffer)
     }
 
-    fn create_gpu_texture(&mut self, info: render::GpuTextureInfo) -> Arc<render::GpuTexture> {
+    fn create_texture(&mut self, info: render::GpuTextureInfo) -> Arc<render::GpuTexture> {
         trace!("Device", "create_gpu_texture");
-
-        std::unimplemented!()
-    }
-
-    fn collect_garbage(&mut self) {
-        trace!("Device", "collect_garbage");
 
         std::unimplemented!()
     }

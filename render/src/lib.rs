@@ -1,12 +1,10 @@
 mod device;
 mod gpu_buffer;
-mod gpu_resource;
 mod gpu_texture;
 mod system;
 
 pub use self::device::*;
 pub use self::gpu_buffer::*;
-pub use self::gpu_resource::*;
 pub use self::gpu_texture::*;
 pub use self::system::*;
 
