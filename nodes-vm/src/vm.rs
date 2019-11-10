@@ -1,7 +1,7 @@
 use crate::function::Exception;
 use crate::function::Function;
-use crate::variable::Variable;
 use crate::functions_library::FunctionsLibrary;
+use crate::variable::Variable;
 use common::trace;
 use common::trace::*;
 use std::sync::Arc;
@@ -24,7 +24,11 @@ impl Vm {
         }
         let mut result: Vec<Variable> = Vec::new();
         result.resize_with(function.outputs_len(), || Variable::Null);
-        function.run(self, inputs_copy.iter_mut().collect::<Vec<_>>().as_mut_slice(), result.iter_mut().collect::<Vec<_>>().as_mut_slice())?;
+        function.run(
+            self,
+            inputs_copy.iter_mut().collect::<Vec<_>>().as_mut_slice(),
+            result.iter_mut().collect::<Vec<_>>().as_mut_slice(),
+        )?;
         Ok(result)
     }
 }

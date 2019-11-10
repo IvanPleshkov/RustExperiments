@@ -65,18 +65,20 @@ impl Program {
                 let position = instruction_json.get("position")?.as_u64()? as usize;
                 Instruction::Jump(position)
             } else if instruction_type == "invoke" {
-                let mut input_indexes : Vec<usize> = Vec::new();
+                let mut input_indexes: Vec<usize> = Vec::new();
                 for index_json in instruction_json.get("input_indexes")?.as_array()? {
                     input_indexes.push(index_json.as_u64()? as usize);
                 }
 
-                let mut output_indexes : Vec<usize> = Vec::new();
+                let mut output_indexes: Vec<usize> = Vec::new();
                 for index_json in instruction_json.get("output_indexes")?.as_array()? {
                     output_indexes.push(index_json.as_u64()? as usize);
                 }
 
                 let function_json = instruction_json.get("function_data")?;
-                let function = vm.functions_factory.deserialize_function(vm, function_json)?;
+                let function = vm
+                    .functions_factory
+                    .deserialize_function(vm, function_json)?;
                 Instruction::Invoke(function, input_indexes, output_indexes)
             } else {
                 return None;
@@ -180,12 +182,12 @@ impl Function for Program {
                             } else {
                                 cursor_position = *false_position;
                             }
-                        },
+                        }
                         _ => {
                             return Err(Exception {
                                 message: String::from("Instruction::JumpIf: value is not bool"),
                             });
-                        },
+                        }
                     };
                 }
                 Instruction::Jump(position) => {
@@ -203,7 +205,8 @@ impl Function for Program {
                     function.run(
                         vm,
                         input.iter_mut().collect::<Vec<_>>().as_mut_slice(),
-                        output.iter_mut().collect::<Vec<_>>().as_mut_slice())?;
+                        output.iter_mut().collect::<Vec<_>>().as_mut_slice(),
+                    )?;
 
                     for i in 0..output_indexes.len() {
                         let registry_index = output_indexes[i];
@@ -240,55 +243,97 @@ impl Function for Program {
     fn serialize(&self) -> serde_json::Value {
         use serde_json::*;
 
-        let mut instructions_json : Vec<Value> = Vec::new();
+        let mut instructions_json: Vec<Value> = Vec::new();
         for instruction in &self.instructions {
-            let mut map : Map<String, Value> = Map::new();
+            let mut map: Map<String, Value> = Map::new();
             match instruction {
                 Instruction::Copy(from_index, to_index) => {
                     map.insert(String::from("type"), Value::String(String::from("copy")));
                     map.insert(String::from("from_index"), to_value(from_index).unwrap());
                     map.insert(String::from("to_index"), to_value(to_index).unwrap());
-                },
+                }
                 Instruction::MoveFromInput(input_index, registry_index) => {
-                    map.insert(String::from("type"), Value::String(String::from("move_from_input")));
+                    map.insert(
+                        String::from("type"),
+                        Value::String(String::from("move_from_input")),
+                    );
                     map.insert(String::from("input_index"), to_value(input_index).unwrap());
-                    map.insert(String::from("registry_index"), to_value(registry_index).unwrap());
-                },
+                    map.insert(
+                        String::from("registry_index"),
+                        to_value(registry_index).unwrap(),
+                    );
+                }
                 Instruction::MoveToOutput(registry_index, output_index) => {
-                    map.insert(String::from("type"), Value::String(String::from("move_to_output")));
-                    map.insert(String::from("registry_index"), to_value(registry_index).unwrap());
-                    map.insert(String::from("output_index"), to_value(output_index).unwrap());
-                },
+                    map.insert(
+                        String::from("type"),
+                        Value::String(String::from("move_to_output")),
+                    );
+                    map.insert(
+                        String::from("registry_index"),
+                        to_value(registry_index).unwrap(),
+                    );
+                    map.insert(
+                        String::from("output_index"),
+                        to_value(output_index).unwrap(),
+                    );
+                }
                 Instruction::JumpIf(registry_index, true_position, false_position) => {
                     map.insert(String::from("type"), Value::String(String::from("jump_if")));
-                    map.insert(String::from("registry_index"), to_value(registry_index).unwrap());
-                    map.insert(String::from("true_position"), to_value(true_position).unwrap());
-                    map.insert(String::from("false_position"), to_value(false_position).unwrap());
-                },
+                    map.insert(
+                        String::from("registry_index"),
+                        to_value(registry_index).unwrap(),
+                    );
+                    map.insert(
+                        String::from("true_position"),
+                        to_value(true_position).unwrap(),
+                    );
+                    map.insert(
+                        String::from("false_position"),
+                        to_value(false_position).unwrap(),
+                    );
+                }
                 Instruction::Jump(position) => {
                     map.insert(String::from("type"), Value::String(String::from("jump")));
                     map.insert(String::from("position"), to_value(position).unwrap());
-                },
+                }
                 Instruction::Invoke(function, input_indexes, output_indexes) => {
                     map.insert(String::from("type"), Value::String(String::from("invoke")));
                     map.insert(String::from("function_data"), function.serialize());
 
-                    let inputs_json : Vec<_> = input_indexes.into_iter().map(|x| to_value(*x).unwrap()).collect();
+                    let inputs_json: Vec<_> = input_indexes
+                        .into_iter()
+                        .map(|x| to_value(*x).unwrap())
+                        .collect();
                     map.insert(String::from("input_indexes"), Value::Array(inputs_json));
 
-                    let outputs_json : Vec<_> = output_indexes.into_iter().map(|x| to_value(*x).unwrap()).collect();
+                    let outputs_json: Vec<_> = output_indexes
+                        .into_iter()
+                        .map(|x| to_value(*x).unwrap())
+                        .collect();
                     map.insert(String::from("output_indexes"), Value::Array(outputs_json));
-                },
+                }
             };
             instructions_json.push(Value::Object(map));
         }
 
         let mut result = self.serialize_common_function_data();
         let map = result.as_object_mut().unwrap();
-        map.insert(String::from("instructions"), Value::Array(instructions_json));
-        map.insert(String::from("inputs_len"), to_value(self.inputs_len).unwrap());
-        map.insert(String::from("outputs_len"), to_value(self.outputs_len).unwrap());
-        map.insert(String::from("registry_size"), to_value(self.registry_size).unwrap());
+        map.insert(
+            String::from("instructions"),
+            Value::Array(instructions_json),
+        );
+        map.insert(
+            String::from("inputs_len"),
+            to_value(self.inputs_len).unwrap(),
+        );
+        map.insert(
+            String::from("outputs_len"),
+            to_value(self.outputs_len).unwrap(),
+        );
+        map.insert(
+            String::from("registry_size"),
+            to_value(self.registry_size).unwrap(),
+        );
         result
     }
 

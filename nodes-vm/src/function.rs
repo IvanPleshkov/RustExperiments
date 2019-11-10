@@ -1,7 +1,7 @@
 use crate::variable::Variable;
 use crate::vm::Vm;
-use serde_json;
 use semver;
+use serde_json;
 
 pub struct Exception {
     pub message: String,
@@ -31,10 +31,16 @@ pub trait Function {
 
     fn serialize_common_function_data(&self) -> serde_json::Value {
         use serde_json::*;
-        let mut map : Map<String, Value> = Map::new();
-        map.insert(String::from("version"), to_value(format!("{}", self.version())).unwrap());
+        let mut map: Map<String, Value> = Map::new();
+        map.insert(
+            String::from("version"),
+            to_value(format!("{}", self.version())).unwrap(),
+        );
         map.insert(String::from("name"), to_value(self.name()).unwrap());
-        map.insert(String::from("library"), to_value(self.library_name()).unwrap());
+        map.insert(
+            String::from("library"),
+            to_value(self.library_name()).unwrap(),
+        );
         serde_json::Value::Object(map)
     }
 }
