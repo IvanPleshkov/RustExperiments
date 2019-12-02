@@ -2,8 +2,5 @@
 members = [
     "common",
     "render",
-    "render-vulkan",
-    "nodes-vm",
-    "nodes-engine",
     "playground",
 ]

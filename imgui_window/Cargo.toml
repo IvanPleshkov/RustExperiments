@@ -1,5 +1,5 @@
 [package]
-name = "nodes-engine"
+name = "imgui_window"
 version = "0.1.0"
 authors = ["Ivan Pleshkov <Ivan.Pleshkov@darkmatter.ae>"]
 edition = "2018"
@@ -8,7 +8,12 @@ edition = "2018"
 
 [dependencies]
 common = { path = "../common" }
-nodes-vm = { path = "../nodes-vm" }
 log = "0.4"
-fern = "0.5.8"
-nalgebra = "0.18.1"
+fern = "0.5"
+nalgebra = "0.19"
+clipboard = "0.5"
+glium = { version = "0.25", default-features = true }
+image = "0.22"
+imgui = "0.2"
+imgui-glium-renderer = "0.2"
+imgui-winit-support = "0.2"
