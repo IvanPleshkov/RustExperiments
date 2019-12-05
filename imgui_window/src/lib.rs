@@ -1,3 +1,5 @@
+// copied from https://github.com/Gekkio/imgui-rs/
+
 use glium::glutin::{self, Event, WindowEvent};
 use glium::{Display, Surface};
 use imgui::{Context, FontConfig, FontGlyphRanges, FontSource, Ui};

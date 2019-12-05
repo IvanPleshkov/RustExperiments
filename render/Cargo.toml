@@ -9,6 +9,6 @@ edition = "2018"
 [dependencies]
 common = { path = "../common" }
 log = "0.4"
-fern = "0.5.8"
-nalgebra = "0.18.1"
-semver = "0.7.0"
+fern = "0.5"
+nalgebra = "0.19"
+semver = "0.9"

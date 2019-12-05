@@ -1,4 +1,4 @@
-// copied from https://github.com/Gekkio/imgui-rs/blob/master/imgui-examples/examples/support/clipboard.rs
+// copied from https://github.com/Gekkio/imgui-rs/
 
 use clipboard::{ClipboardContext, ClipboardProvider};
 use imgui::{ClipboardBackend, ImStr, ImString};
