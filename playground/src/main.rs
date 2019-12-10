@@ -1,12 +1,21 @@
-use nalgebra::Vector3;
-use std::any::Any;
-use std::fmt::Display;
+use imgui::*;
+use imgui_window;
 
 fn main() {
-    let x = nalgebra::Vector3::new(0.0, 0.0, 0.0);
-    log(Box::new(x))
-}
-
-fn log(value: Box<Any + 'static>) {
-    let x: Result<Box<&str>, _> = value.downcast();
+    let system = imgui_window::init(file!());
+    system.main_loop(|_, ui| {
+        Window::new(im_str!("Hello world"))
+            .size([300.0, 100.0], Condition::FirstUseEver)
+            .build(ui, || {
+                ui.text(im_str!("Hello world!"));
+                ui.text(im_str!("こんにちは世界！"));
+                ui.text(im_str!("This...is...imgui-rs!"));
+                ui.separator();
+                let mouse_pos = ui.io().mouse_pos;
+                ui.text(format!(
+                    "Mouse Position: ({:.1},{:.1})",
+                    mouse_pos[0], mouse_pos[1]
+                ));
+            });
+    });
 }
