@@ -1,14 +1,20 @@
+use std::sync::Arc;
+
+pub type GpuTextureHandle = u64;
+
+pub type GpuTextureViewHandle = u64;
+
 pub struct GpuTexture {
-    pub handle: u64,
+    pub name: String,
 
-    pub view_handle: u64,
+    pub handle: Option<GpuTextureHandle>,
 
-    pub info: GpuTextureInfo,
+    pub view_handle: Option<GpuTextureViewHandle>,
+
+    pub info: Option<GpuTextureInfo>,
 }
 
 pub struct GpuTextureInfo {
-    pub name: String,
-
     pub width: u64,
 
     pub height: u64,
@@ -245,15 +251,23 @@ pub struct GpuTextureInfoBuilder {
 }
 
 impl GpuTexture {
+    pub fn new(name: &str) -> Arc<GpuTexture> {
+        Arc::new(GpuTexture{
+            name: String::from(name),
+            handle: None,
+            view_handle: None,
+            info: None,
+        })
+    }
+
     pub fn is_valid(&self) -> bool {
-        self.handle != 0 && self.view_handle != 0
+        self.handle.is_some() && self.view_handle.is_some()
     }
 }
 
 impl GpuTextureInfo {
     pub fn default() -> GpuTextureInfo {
         GpuTextureInfo {
-            name: String::new(),
             width: 1,
             height: 1,
             depth: 1,
@@ -286,11 +300,6 @@ impl GpuTextureInfoBuilder {
 
     pub fn build(self) -> GpuTextureInfo {
         self.info
-    }
-
-    pub fn name<'a>(&'a mut self, name: String) -> &'a mut Self {
-        self.info.name = name;
-        self
     }
 
     pub fn width<'a>(&'a mut self, width: u64) -> &'a mut Self {

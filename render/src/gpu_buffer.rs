@@ -1,14 +1,20 @@
+use std::sync::Arc;
+
+pub type GpuBufferHandle = u64;
+
+pub type GpuBufferViewHandle = u64;
+
 pub struct GpuBuffer {
-    pub handle: u64,
+    pub name: String,
 
-    pub view_handle: u64,
+    pub handle: Option<GpuBufferHandle>,
 
-    pub info: GpuBufferInfo,
+    pub view_handle: Option<GpuBufferViewHandle>,
+
+    pub info: Option<GpuBufferInfo>,
 }
 
 pub struct GpuBufferInfo {
-    pub name: String,
-
     pub size: u64,
 
     pub buffer_type: GpuBufferType,
@@ -24,15 +30,23 @@ pub struct GpuBufferInfoBuilder {
 }
 
 impl GpuBuffer {
+    pub fn new(name: &str) -> Arc<GpuBuffer> {
+        Arc::new(GpuBuffer{
+            name: String::from(name),
+            handle: None,
+            view_handle: None,
+            info: None,
+        })
+    }
+
     pub fn is_valid(&self) -> bool {
-        self.handle != 0 && self.view_handle != 0
+        self.handle.is_some() && self.view_handle.is_some()
     }
 }
 
 impl GpuBufferInfo {
     pub fn default() -> GpuBufferInfo {
         GpuBufferInfo {
-            name: String::new(),
             size: 0,
             buffer_type: GpuBufferType::Vertex,
         }
@@ -48,11 +62,6 @@ impl GpuBufferInfo {
 impl GpuBufferInfoBuilder {
     pub fn build(self) -> GpuBufferInfo {
         self.info
-    }
-
-    pub fn name<'a>(&'a mut self, name: String) -> &'a mut Self {
-        self.info.name = name;
-        self
     }
 
     pub fn size<'a>(&'a mut self, size: u64) -> &'a mut Self {
