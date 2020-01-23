@@ -1,8 +1,4 @@
-use crate::{
-    command_buffer::CommandBuffer,
-    device_info::DeviceInfo,
-    material::Material,
-};
+use crate::{command_buffer::CommandBuffer, device_info::DeviceInfo, material::Material};
 use std::sync::Arc;
 
 pub trait Device {

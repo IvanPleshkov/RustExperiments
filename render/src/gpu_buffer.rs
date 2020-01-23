@@ -1,20 +1,19 @@
+use crate::command_buffer::CommandBuffer;
 use std::sync::Arc;
 
-pub type GpuBufferHandle = u64;
-
-pub type GpuBufferViewHandle = u64;
-
 pub struct GpuBuffer {
-    pub name: String,
+    pub id: GpuBufferIndex,
 
-    pub handle: Option<GpuBufferHandle>,
+    pub info: GpuBufferInfo,
+}
 
-    pub view_handle: Option<GpuBufferViewHandle>,
-
-    pub info: Option<GpuBufferInfo>,
+pub struct GpuBufferIndex {
+    pub id: u64,
 }
 
 pub struct GpuBufferInfo {
+    pub name: String,
+
     pub size: u64,
 
     pub buffer_type: GpuBufferType,
@@ -30,23 +29,20 @@ pub struct GpuBufferInfoBuilder {
 }
 
 impl GpuBuffer {
-    pub fn new(name: &str) -> Arc<GpuBuffer> {
-        Arc::new(GpuBuffer{
-            name: String::from(name),
-            handle: None,
-            view_handle: None,
-            info: None,
+    pub fn new(command_buffer: &mut CommandBuffer, info: GpuBufferInfo) -> Arc<GpuBuffer> {
+        Arc::new(GpuBuffer {
+            id: GpuBufferIndex {
+                id: command_buffer.generate_unique_id(),
+            },
+            info: info,
         })
-    }
-
-    pub fn is_valid(&self) -> bool {
-        self.handle.is_some() && self.view_handle.is_some()
     }
 }
 
 impl GpuBufferInfo {
     pub fn default() -> GpuBufferInfo {
         GpuBufferInfo {
+            name: String::new(),
             size: 0,
             buffer_type: GpuBufferType::Vertex,
         }
@@ -62,6 +58,11 @@ impl GpuBufferInfo {
 impl GpuBufferInfoBuilder {
     pub fn build(self) -> GpuBufferInfo {
         self.info
+    }
+
+    pub fn name<'a>(&'a mut self, name: &str) -> &'a mut Self {
+        self.info.name = String::from(name);
+        self
     }
 
     pub fn size<'a>(&'a mut self, size: u64) -> &'a mut Self {

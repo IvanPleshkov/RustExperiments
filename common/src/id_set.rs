@@ -89,7 +89,7 @@ where
     }
 
     pub fn clear(&mut self) {
-        panic!("not implemented")
+        unimplemented!()
     }
 
     pub fn clear_all(&mut self) {
@@ -100,23 +100,23 @@ where
     }
 
     pub fn get(&self, _id: TId) -> &T {
-        panic!("not implemented")
+        unimplemented!()
     }
 
     pub fn set(&mut self, _id: TId, _value: T) {
-        panic!("not implemented")
+        unimplemented!()
     }
 
     pub fn find() -> Optioned<TId> {
-        panic!("not implemented")
+        unimplemented!()
     }
 
     pub fn find_all() -> Vec<TId> {
-        panic!("not implemented")
+        unimplemented!()
     }
 
     pub fn optimize() {
-        panic!("not implemented")
+        unimplemented!()
     }
 }
 
