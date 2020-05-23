@@ -1229,6 +1229,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "trace"
+version = "0.1.0"
+dependencies = [
+ "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fern 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nalgebra 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "optional 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "trace_proc_macro"
+version = "0.1.0"
+
+[[package]]
+name = "trace_viewer_app"
+version = "0.1.0"
+dependencies = [
+ "clipboard 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "common 0.1.0",
+ "fern 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glium 0.25.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.22.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "imgui 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "imgui-glium-renderer 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "imgui-winit-support 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "imgui_window 0.1.0",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nalgebra 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "typenum"
 version = "1.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

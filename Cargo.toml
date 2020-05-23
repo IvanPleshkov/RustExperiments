@@ -1,6 +1,9 @@
 [workspace]
 members = [
     "common",
+    "trace",
+    "trace_proc_macro",
+    "trace_viewer_app",
     "render",
     "playground",
 ]

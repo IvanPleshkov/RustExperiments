@@ -1,6 +1,14 @@
-use std::sync::Arc;
-use crate::shader::Shader;
-use crate::render_state::RenderState;
+//use std::sync::Arc;
+//use crate::shader::Shader;
+//use crate::render_state::RenderState;
+
+pub struct Material {
+}
+
+pub struct MaterialInstance {
+}
+
+/*
 
 pub struct Material {
     profiles_manager: Arc<MaterialProfilesManager>,
@@ -47,3 +55,5 @@ impl MaterialInstance {
 impl MaterialProfilesManager {
     
 }
+
+*/

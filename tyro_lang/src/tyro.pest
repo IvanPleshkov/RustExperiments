@@ -1,0 +1,74 @@
+integer_number = @{ ("+" | "-")? ~ ASCII_DIGIT+ }
+float_number = @{integer_number ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ integer_number)? ~ "f"? }
+double_number = @{integer_number ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ integer_number)? ~ "d" }
+number = ${ integer_number | double_number | float_number }
+
+identifier_char = @{ LETTER | "_" | ASCII_DIGIT }
+identifier = @{ !ASCII_DIGIT ~ identifier_char+ }
+template_parameter = _{ identifier | number }
+template_arguments = { "<" ~ template_parameter ~ ("," ~ template_parameter)* ~ ","? ~ ">" }
+templated_identifier = { identifier ~ template_arguments }
+
+add_operator           = @{ "+" }
+sub_operator           = @{ "-" }
+mult_operator          = @{ "*" }
+div_operator           = @{ "/" }
+mod_operator           = @{ "%" }
+pow_operator           = @{ "^" }
+and_operator           = @{ "&&" }
+or_operator            = @{ "||" }
+less_operator          = @{ "<" }
+less_or_equal_operator = @{ "<=" }
+more_operator          = @{ ">" }
+more_or_equal_operator = @{ ">=" }
+equal_operator         = @{ "==" }
+not_equal_operator     = @{ "!=" }
+binary_operator = {
+    add_operator           |
+    sub_operator           |
+    mult_operator          |
+    div_operator           |
+    mod_operator           |
+    pow_operator           |
+    and_operator           |
+    or_operator            |
+    less_operator          |
+    less_or_equal_operator |
+    more_operator          |
+    more_or_equal_operator |
+    equal_operator         |
+    not_equal_operator }
+neg_operator    = @{ "!" }
+minus_operator  = @{ "-" }
+unary_operator  = { neg_operator | minus_operator }
+
+if_statement = { "if" ~ expression ~ "{" ~ command* ~ "}" }
+
+term = _{ if_statement | templated_identifier | identifier | number | "(" ~ expression ~ ")" }
+arguments = { "(" ~ ")" | "(" ~ expression ~ ("," ~ expression)* ~ ","? ~ ")" }
+argumented_term = { term ~ arguments }
+indexes = { "[" ~ expression ~ ("," ~ expression)* ~ ","? ~ "]" }
+indexed_term = { term ~ indexes }
+term_with_args = _{  argumented_term | indexed_term | term }
+unary_term_with_args = _{ unary_operator ~ term_with_args | term_with_args }
+expression = { unary_term_with_args ~ (binary_operator ~ unary_term_with_args)* }
+
+let_command = { "let" ~ identifier ~ "=" ~ expression ~ ";"? }
+assign_command = { identifier ~ "=" ~ expression ~ ";"? }
+assign_index_command = { indexed_term ~ "=" ~ expression ~ ";"? }
+expression_command = { expression ~ ";"? }
+command = _{ let_command | assign_command | assign_index_command | expression_command }
+
+import_filename = { (!"\"" ~ ANY)* }
+import = { "import" ~ "\"" ~ import_filename ~ "\""}
+
+function_template = { "<" ~ ">" }
+function_arguments = { "<" ~ ">" }
+function = { ("<" ~ function_template ~ ">")? ~ "fn" ~ identifier ~ "(" ~ function_arguments ~ ")" ~ "{"  ~ command* ~ "}" }
+
+
+
+file = { SOI ~ command* ~ EOI }
+
+WHITESPACE = _{ " " | "\t" | "\n" | "\r\n" }
+COMMENT = { "/*" ~ (!"*/" ~ ANY)* ~ "*/" }

@@ -1,0 +1,37 @@
+import "../rt.rls"
+
+enum Direction {
+}
+
+<type Real = (float, double)>
+fn pi(out value) {
+    value = 3.14;
+}
+
+<type Real, bool colored>
+struct LightPoint {
+    position: Vec3<Real>,
+    color: Color32,
+}
+
+<type Real, Real pi>
+vertex_shader sample_vertex_shader(in VertexInput vertex_input, ) {
+
+}
+
+mesh_shader mesh_shader() {
+    
+}
+
+material SimpleShader {
+    render_state: {
+
+    },
+    uniforms: {
+
+    },
+    pipeline: {
+        vertex: vertex_shader(),
+        fragment: fragment_shader(),
+    },
+}
