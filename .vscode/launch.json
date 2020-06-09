@@ -99,6 +99,25 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug unit tests in library 'tyro_lang'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=tyro_lang"
+                ],
+                "filter": {
+                    "name": "tyro_lang",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'playground'",
             "cargo": {
                 "args": [
@@ -145,6 +164,24 @@
                 ],
                 "filter": {
                     "name": "trace_viewer_app",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'nodes_editor'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=nodes_editor",
+                    "--package=nodes_editor"
+                ],
+                "filter": {
+                    "name": "nodes_editor",
                     "kind": "bin"
                 }
             },

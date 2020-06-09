@@ -68,7 +68,7 @@ function = { ("<" ~ function_template ~ ">")? ~ "fn" ~ identifier ~ "(" ~ functi
 
 
 
-file = { SOI ~ command* ~ EOI }
+file = { SOI ~ function* ~ EOI }
 
 WHITESPACE = _{ " " | "\t" | "\n" | "\r\n" }
 COMMENT = { "/*" ~ (!"*/" ~ ANY)* ~ "*/" }

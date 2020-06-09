@@ -4,6 +4,13 @@ members = [
     "trace",
     "trace_proc_macro",
     "trace_viewer_app",
+    "tyro_lang",
     "render",
+    # "render_opengl",
+
+    "editor",
+    "nodes_engine",
+    "nodes_editor",
+
     "playground",
 ]

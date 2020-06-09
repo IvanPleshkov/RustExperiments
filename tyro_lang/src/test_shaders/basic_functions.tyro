@@ -1,0 +1,4 @@
+
+fn basic_function() {
+    2 + 2 * 2
+}
