@@ -1,9 +1,9 @@
 use crate::camera::Camera;
-use nodes_engine::NodesDocument;
+use nodes_engine::NodesDocumentImpl;
 use std::any::Any;
 
 pub struct NodesEditable {
-    pub document: NodesDocument,
+    pub document: NodesDocumentImpl,
     pub selection: NodesSelection,
     pub camera: Camera,
 }

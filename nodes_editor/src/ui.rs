@@ -1,5 +1,5 @@
 use crate::nodes_editor::{ NodesEditable };
-// use nodes_engine::NodesDocument;
+use nodes_engine::NodesDocument;
 use editor::Editor;
 use nalgebra::Vector2;
 
@@ -60,7 +60,7 @@ fn draw_connections(
 fn draw_nodes(
     draw_list: &imgui::WindowDrawList,
     _ui_state: &mut UiState,
-    editor: &mut Editor<NodesEditable>,
+    editor: &Editor<NodesEditable>,
     ui_size: Vector2<f32>,
     ui_pos: Vector2<f32>,
 ) {
@@ -69,11 +69,10 @@ fn draw_nodes(
     const CANVAS_CORNER_COLOR3: [f32; 3] = [0.24, 0.24, 0.27];
     const CANVAS_CORNER_COLOR4: [f32; 3] = [0.2, 0.2, 0.24];
 
-    let node_handlers_list = editor.get().document.get_nodes_list();
-    for node_handler in node_handlers_list {
-        let nodes_document = &editor.get().document;
-        let camera = &editor.get().camera;
-
+    let editor = editor.get();
+    let nodes_document = &editor.document;
+    let camera = &editor.camera;
+    for node_handler in nodes_document.get_nodes_list() {
         let node_pos = nodes_document.get_node_position(node_handler);
         let node_size = Vector2::new(1., 1.);
 

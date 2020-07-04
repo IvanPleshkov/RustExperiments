@@ -12,10 +12,12 @@ pub trait Node {
 }
 
 pub struct NodeOutputSlotInfo {
+
     pub name: String,
 }
 
 pub struct NodeInputSlotInfo {
+
     pub name: String,
 }
 

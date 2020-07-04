@@ -5,18 +5,33 @@ use std::collections::HashMap;
 pub use u64 as NodeHandler;
 pub use u64 as ConnectionHandler;
 
-pub struct NodesDocument {
-    node_handler_counter: NodeHandler,
-    cells: HashMap<NodeHandler, NodeDocumentCell>,
-    connection_handler_counter: ConnectionHandler,
-    connections: HashMap<ConnectionHandler, NodeDocumentConnection>,
-}
+pub trait NodesDocument {
 
-struct NodeDocumentCell {
-    pub node: Box<dyn Node>,
-    pub position: Vector2<f32>,
-    pub input_connections: Vec<ConnectionHandler>,
-    pub output_connections: Vec<ConnectionHandler>,
+    fn load(&mut self) -> std::io::Result<()>;
+
+    fn save(&self) -> std::io::Result<()>;
+
+    fn get_nodes_list(&self) -> Vec<NodeHandler>;
+
+    fn add_node(&mut self, node: Box<dyn Node>) -> NodeHandler;
+
+    fn add_node_with_handler(&mut self, node: Box<dyn Node>, handler: NodeHandler);
+
+    fn remove_node(&mut self, _handler: NodeHandler) -> Result<(), ()>;
+
+    fn set_node_position(&mut self, handler: NodeHandler, position: Vector2<f32>);
+
+    fn get_node_position(&self, handler: NodeHandler) -> Vector2<f32>;
+
+    fn add_connection(&mut self, connection: NodeDocumentConnection) -> ConnectionHandler;
+
+    fn add_connection_with_handler(&mut self, connection: NodeDocumentConnection, handler: ConnectionHandler);
+
+    fn get_connection(&self, handler: ConnectionHandler) -> Option<NodeDocumentConnection>;
+
+    fn get_input_slot_connection(&self, slot: &NodeDocumentSlot) -> Option<ConnectionHandler>;
+
+    fn get_output_slot_connections(&self, slot: &NodeDocumentSlot) -> Vec<ConnectionHandler>;
 }
 
 #[derive(Clone, PartialEq)]
@@ -32,25 +47,43 @@ pub struct NodeDocumentConnection {
     pub to: NodeDocumentSlot,
 }
 
-impl NodesDocument {
-    pub fn new() -> NodesDocument {
-        NodesDocument {
+pub struct NodesDocumentImpl {
+    node_handler_counter: NodeHandler,
+    cells: HashMap<NodeHandler, NodeDocumentCell>,
+    connection_handler_counter: ConnectionHandler,
+    connections: HashMap<ConnectionHandler, NodeDocumentConnection>,
+}
+
+struct NodeDocumentCell {
+    pub node: Box<dyn Node>,
+    pub position: Vector2<f32>,
+    pub input_connections: Vec<ConnectionHandler>,
+    pub output_connections: Vec<ConnectionHandler>,
+}
+
+impl NodesDocumentImpl {
+
+    pub fn new() -> NodesDocumentImpl {
+        NodesDocumentImpl {
             node_handler_counter: 0,
             cells: HashMap::new(),
             connection_handler_counter: 0,
             connections: HashMap::new(),
         }
     }
+}
 
-    pub fn load() -> std::io::Result<NodesDocument> {
+impl NodesDocument for NodesDocumentImpl {
+
+    fn load(&mut self) -> std::io::Result<()> {
         unimplemented!();
     }
 
-    pub fn save(&self) -> std::io::Result<()> {
+    fn save(&self) -> std::io::Result<()> {
         unimplemented!();
     }
 
-    pub fn get_nodes_list(&self) -> Vec<NodeHandler> {
+    fn get_nodes_list(&self) -> Vec<NodeHandler> {
         let mut result = Vec::new();
         for pair in &self.cells {
             result.push(*pair.0);
@@ -58,14 +91,14 @@ impl NodesDocument {
         result
     }
 
-    pub fn add_node(&mut self, node: Box<dyn Node>) -> NodeHandler {
+    fn add_node(&mut self, node: Box<dyn Node>) -> NodeHandler {
         let handler = self.node_handler_counter + 1;
         self.node_handler_counter = self.node_handler_counter + 1;
         self.add_node_with_handler(node, handler);
         handler
     }
 
-    pub fn add_node_with_handler(&mut self, node: Box<dyn Node>, handler: NodeHandler) {
+    fn add_node_with_handler(&mut self, node: Box<dyn Node>, handler: NodeHandler) {
         if handler >= self.node_handler_counter {
             panic!("manual handler should be used by node and deleted");
         }
@@ -81,11 +114,11 @@ impl NodesDocument {
         self.cells.insert(handler, cell);
     }
 
-    pub fn remove_node(&mut self, _handler: NodeHandler) -> Result<(), ()> {
+    fn remove_node(&mut self, _handler: NodeHandler) -> Result<(), ()> {
         unimplemented!();
     }
 
-    pub fn set_node_position(&mut self, handler: NodeHandler, position: Vector2<f32>) {
+    fn set_node_position(&mut self, handler: NodeHandler, position: Vector2<f32>) {
         if let Some(cell) = self.cells.get_mut(&handler) {
             cell.position = position;
         } else {
@@ -93,7 +126,7 @@ impl NodesDocument {
         }
     }
 
-    pub fn get_node_position(&self, handler: NodeHandler) -> Vector2<f32> {
+    fn get_node_position(&self, handler: NodeHandler) -> Vector2<f32> {
         if let Some(cell) = self.cells.get(&handler) {
             cell.position
         } else {
@@ -101,14 +134,14 @@ impl NodesDocument {
         }
     }
 
-    pub fn add_connection(&mut self, connection: NodeDocumentConnection) -> ConnectionHandler {
+    fn add_connection(&mut self, connection: NodeDocumentConnection) -> ConnectionHandler {
         let handler = self.connection_handler_counter + 1;
         self.connection_handler_counter = self.connection_handler_counter + 1;
         self.add_connection_with_handler(connection, handler);
         handler
     }
 
-    pub fn add_connection_with_handler(&mut self, connection: NodeDocumentConnection, handler: ConnectionHandler) {
+    fn add_connection_with_handler(&mut self, connection: NodeDocumentConnection, handler: ConnectionHandler) {
         if handler >= self.connection_handler_counter {
             panic!("manual handler should be used and deleted");
         }
@@ -130,7 +163,7 @@ impl NodesDocument {
         self.connections.insert(handler, connection);
     }
 
-    pub fn get_connection(&self, handler: ConnectionHandler) -> Option<NodeDocumentConnection> {
+    fn get_connection(&self, handler: ConnectionHandler) -> Option<NodeDocumentConnection> {
         if let Some(connection) = self.connections.get(&handler) {
             Some(connection.clone())
         } else {
@@ -138,7 +171,7 @@ impl NodesDocument {
         }
     }
 
-    pub fn get_input_slot_connection(&self, slot: &NodeDocumentSlot) -> Option<ConnectionHandler> {
+    fn get_input_slot_connection(&self, slot: &NodeDocumentSlot) -> Option<ConnectionHandler> {
         if let Some(cell) = self.cells.get(&slot.node) {
             for connection_handler in &cell.input_connections {
                 if let Some(connection) = self.connections.get(connection_handler) {
@@ -153,7 +186,7 @@ impl NodesDocument {
         }
     }
 
-    pub fn get_output_slot_connections(&self, slot: &NodeDocumentSlot) -> Vec<ConnectionHandler> {
+    fn get_output_slot_connections(&self, slot: &NodeDocumentSlot) -> Vec<ConnectionHandler> {
         let mut result = Vec::new();
         if let Some(cell) = self.cells.get(&slot.node) {
             for connection_handler in &cell.output_connections {

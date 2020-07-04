@@ -1,6 +1,6 @@
 use crate::nodes_editor::{ NodesEditable, NodesSelection, NodesEditorActionFabric };
 use crate::camera::Camera;
-use nodes_engine::NodesDocument;
+use nodes_engine::NodesDocumentImpl;
 use imgui_window;
 use editor::Editor;
 use nalgebra::Vector2;
@@ -9,12 +9,17 @@ mod camera;
 mod nodes_editor;
 mod ui;
 
+fn new_nodes_document(_document: &mut NodesDocumentImpl) {
+    // document.add_node(node: Box<dyn Node>);
+}
+
 fn new_nodes_editor() -> Editor<NodesEditable> {
-    let editable = NodesEditable {
-        document: NodesDocument::new(),
+    let mut editable = NodesEditable {
+        document: NodesDocumentImpl::new(),
         selection: NodesSelection{},
         camera: Camera{},
     };
+    new_nodes_document(&mut editable.document);
     let action_fabric = NodesEditorActionFabric{};
     Editor::new(editable, Box::new(action_fabric))
 }
