@@ -10,5 +10,5 @@ edition = "2018"
 common = { path = "../common" }
 log = "0.4"
 fern = "0.5"
-nalgebra = "0.19"
+nalgebra = "0.21.1"
 semver = "0.9"

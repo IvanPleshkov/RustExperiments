@@ -11,7 +11,7 @@ editor = { path = "../editor" }
 nodes_engine = { path = "../nodes_engine" }
 log = "0.4"
 fern = "0.5"
-nalgebra = "0.19"
+nalgebra = "0.21.1"
 clipboard = "0.5"
 glium = { version = "0.25", default-features = true }
 image = "0.22"
