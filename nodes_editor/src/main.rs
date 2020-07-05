@@ -1,16 +1,19 @@
 use crate::nodes_editor::{ NodesEditable, NodesSelection, NodesEditorActionFabric };
 use crate::camera::Camera;
-use nodes_engine::NodesDocumentImpl;
+use crate::style::Style;
+use nodes_engine::{  NodesDocumentImpl, NodesDocument };
 use imgui_window;
 use editor::Editor;
 use nalgebra::Vector2;
 
 mod camera;
 mod nodes_editor;
+mod style;
 mod ui;
 
-fn new_nodes_document(_document: &mut NodesDocumentImpl) {
-    // document.add_node(node: Box<dyn Node>);
+fn new_nodes_document(document: &mut NodesDocumentImpl) {
+    let handler = document.add_node(nodes_engine::std_nodes::constant_boolean::ConstantBoolean::new());
+    document.set_node_position(handler, Vector2::new(0., 0.));
 }
 
 fn new_nodes_editor() -> Editor<NodesEditable> {
@@ -37,6 +40,8 @@ fn gui_loop_tick(ui: &imgui::Ui, ui_state: &mut ui::UiState, editor: &mut Editor
             mouse_pos[0], mouse_pos[1]
         ));
 
+        let canvas_pos = ui.cursor_screen_pos();
+        let canvas_pos = Vector2::new(canvas_pos[0], canvas_pos[1]);
         let canvas_size = {
             let mut canvas_size = ui.content_region_avail();
             if canvas_size[0] < 100.0 {
@@ -47,13 +52,15 @@ fn gui_loop_tick(ui: &imgui::Ui, ui_state: &mut ui::UiState, editor: &mut Editor
             }
             Vector2::new(canvas_size[0], canvas_size[1])
         };
-        ui::nodes_editor_ui(ui, ui_state, editor, canvas_size);
+        ui::nodes_editor_ui(ui, ui_state, editor, canvas_pos, canvas_size);
     });
 }
 
 fn main() {
     let mut editor = new_nodes_editor();
-    let mut nodes_ui_state = ui::UiState { };
+    let mut nodes_ui_state = ui::UiState {
+        style: Style::new(),
+    };
 
     let system = imgui_window::init(file!());
     system.main_loop(|_, ui| {

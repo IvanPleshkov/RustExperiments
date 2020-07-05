@@ -92,7 +92,7 @@ impl NodesDocument for NodesDocumentImpl {
     }
 
     fn add_node(&mut self, node: Box<dyn Node>) -> NodeHandler {
-        let handler = self.node_handler_counter + 1;
+        let handler = self.node_handler_counter;
         self.node_handler_counter = self.node_handler_counter + 1;
         self.add_node_with_handler(node, handler);
         handler
@@ -135,7 +135,7 @@ impl NodesDocument for NodesDocumentImpl {
     }
 
     fn add_connection(&mut self, connection: NodeDocumentConnection) -> ConnectionHandler {
-        let handler = self.connection_handler_counter + 1;
+        let handler = self.connection_handler_counter;
         self.connection_handler_counter = self.connection_handler_counter + 1;
         self.add_connection_with_handler(connection, handler);
         handler
