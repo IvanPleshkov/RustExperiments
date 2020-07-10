@@ -78,7 +78,7 @@ fn draw_nodes(
         let node_pos = node_pos + Vector2::new(ui_pos[0], ui_pos[1]);
         let node_pos = node_pos + Vector2::new(ui_size[0] / 2., ui_size[1] / 2.);
 
-        let node_size = Vector2::new(100., 100.);
+        let node_size = nodes_document.get_node_size(node_handler);
         let node_size = node_size * camera.scale();
 
         draw_node_border(draw_list, ui_state, editor, node_pos, node_size);

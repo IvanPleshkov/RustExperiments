@@ -23,6 +23,8 @@ pub trait NodesDocument {
 
     fn get_node_position(&self, handler: NodeHandler) -> Vector2<f32>;
 
+    fn get_node_size(&self, handler: NodeHandler) -> Vector2<f32>;
+
     fn add_connection(&mut self, connection: NodeDocumentConnection) -> ConnectionHandler;
 
     fn add_connection_with_handler(&mut self, connection: NodeDocumentConnection, handler: ConnectionHandler);
@@ -129,6 +131,14 @@ impl NodesDocument for NodesDocumentImpl {
     fn get_node_position(&self, handler: NodeHandler) -> Vector2<f32> {
         if let Some(cell) = self.cells.get(&handler) {
             cell.position
+        } else {
+            panic!("try to get position of unexisting node")
+        }
+    }
+
+    fn get_node_size(&self, handler: NodeHandler) -> Vector2<f32> {
+        if let Some(_) = self.cells.get(&handler) {
+            Vector2::new(100., 100.)
         } else {
             panic!("try to get position of unexisting node")
         }
