@@ -1,4 +1,5 @@
-use crate::nodes_editor::{ NodesEditable, NodesSelection, NodesEditorActionFabric };
+use crate::nodes_editor::{ NodesEditable, NodesSelection };
+use crate::actions::NodesEditorActionFabric;
 use crate::camera::Camera;
 use crate::style::Style;
 use nodes_engine::{  NodesDocumentImpl, NodesDocument };
@@ -8,6 +9,8 @@ use nalgebra::Vector2;
 
 mod camera;
 mod nodes_editor;
+mod events;
+mod actions;
 mod style;
 mod ui;
 
@@ -19,7 +22,9 @@ fn new_nodes_document(document: &mut NodesDocumentImpl) {
 fn new_nodes_editor() -> Editor<NodesEditable> {
     let mut editable = NodesEditable {
         document: NodesDocumentImpl::new(),
-        selection: NodesSelection{},
+        selection: NodesSelection{
+            set: std::collections::HashSet::new(),
+        },
         camera: Camera{},
     };
     new_nodes_document(&mut editable.document);

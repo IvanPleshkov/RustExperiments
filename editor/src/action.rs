@@ -3,6 +3,8 @@ use std::any::Any;
 pub struct HandleEventResult {
     pub event_handled: bool,
     pub action_finished: bool,
+    pub set_modified_flag: bool,
+    pub push_to_undo_stack: bool,
 }
 
 pub trait Action<T> {
@@ -13,10 +15,6 @@ pub trait Action<T> {
     fn undo(&self, editable: &mut T);
 
     fn redo(&self, editable: &mut T);
-
-    fn need_push_to_undo_stack(&self);
-
-    fn need_set_modified_flag(&self);
 }
 
 pub trait ActionFabric<T> {
