@@ -1,27 +1,24 @@
-extern crate pest;
-extern crate pest_derive;
+use crate::ast;
 
-use pest::error::Error;
-use pest::Parser;
-
-#[derive(Parser)]
-#[grammar = "tyro.pest"]
-struct TyroPestParser;
-
-pub fn parse(s: &str) {
-    let _pest_parsed_data = TyroPestParser::parse(Rule::file, &s);
-    
-    //.expect("unsuccessful parse").next().unwrap();
+pub enum ParseErrorType {
+    ExpectDocumentPart,
 }
+
+pub struct ParseError {
+    pub error_type: ParseErrorType,
+}
+
+pub fn parse_document(s: &str) -> Vec<ast::DocumentPart> {
+    Vec::new()
+}
+
+//fn parse_document_part(s: &str) -> Result<ast::DocumentPart, ParseError> {
+//}
 
 #[cfg(test)]
 mod tests {
 
     #[test]
     fn parse_basic_functions_test() {
-        let path = std::path::Path::new("tyro_lang/src/test_shaders/basic_functions.tyro");
-        if let Ok(unparsed_string) = std::fs::read_to_string(path) {
-            super::parse(&unparsed_string);
-        }
     }
 }

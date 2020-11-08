@@ -1,0 +1,70 @@
+use std::camera;
+
+struct vec4<Real> {
+    x: Real,
+    y: Real,
+    z: Real,
+    w: Real,
+}
+
+impl vec4<Real> {
+
+    fn new() -> vec4<Real> {
+        vec4<Real> {
+            x: 0,
+            y: 0,
+            z: 0,
+            w: 0,
+        }
+    }
+}
+
+#[vertex]
+pub struct CustomVertexData {
+
+}
+
+pub fn vertex_shader_with_custom_vertex_data(vertex: CustomVertexData) -> VSOutput {
+    VSOutput {
+        position: vec4::new(0, 0, 0, 0),
+    }
+}
+
+struct VSOutput {
+    #[position]
+    pub position: vec4<f32>,
+}
+
+#[uniform]
+pub struct FSOutput {
+    #[color, hide_property]
+    pub color: vec4<f32>,
+}
+
+pub fn vertex_shader(vertex: Vertex, env: 2DTriangleEnv) -> VSOutput {
+    if std.api.opengl.version() >= 4 {
+
+    } else {
+
+    };
+    VSOutput {
+        position: vec4(aPos.x, aPos.y, aPos.z, 1.0),
+    }
+}
+
+fn fragment_shader(input: VSOutput) -> FSOutput {
+    VSOutput {
+        color: vec4(1.0f, 0.5f, 0.2f, 1.0f),
+    }
+}
+
+pub struct 2DTriangleEnv {
+
+}
+
+pub pipeline 2DTriangle {
+    render_state: render_state,
+    env: 2DTriangleEnv,
+    vertex_shader: vertex_shader,
+    fragment_shader: fragment_shader,
+}
